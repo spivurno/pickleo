@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { getSession, generateRound, addPlayer, removePlayer, renamePlayer, updateCourts, claimHost } from '../api.js';
+import { getSession, generateRound, addPlayer, removePlayer, renamePlayer, updateCourts, claimHost, resetBoard, restorePlayer, deletePlayerPermanent } from '../api.js';
 import { useSocket } from '../useSocket.js';
 import CourtCard from '../components/CourtCard.jsx';
 import SwapModal from '../components/SwapModal.jsx';
 import AddPlayerModal from '../components/AddPlayerModal.jsx';
+import RoundHistoryTable from '../components/RoundHistoryTable.jsx';
 
 export default function SessionPage({ sessionId, navigate }) {
   const [session, setSession] = useState(null);
@@ -16,6 +17,8 @@ export default function SessionPage({ sessionId, navigate }) {
   const [copied, setCopied] = useState(false);
   const [editingPlayerId, setEditingPlayerId] = useState(null);
   const [editingName, setEditingName] = useState('');
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
   const addPlayerBtnRef = useRef(null);
 
   const [mcToken, setMcToken] = useState(() => localStorage.getItem(`mc_${sessionId}`));
@@ -24,7 +27,7 @@ export default function SessionPage({ sessionId, navigate }) {
   // Initial load
   useEffect(() => {
     getSession(sessionId).then(data => {
-      if (!data) setError('Session not found or expired.');
+      if (!data) setError('Board not found or expired.');
       else setSession(data);
       setLoading(false);
     });
@@ -52,6 +55,32 @@ export default function SessionPage({ sessionId, navigate }) {
       await removePlayer(sessionId, mcToken, playerId);
     } catch (e) {
       setActionError(e.message);
+    }
+  }
+
+  async function handleRestorePlayer(playerId) {
+    try {
+      await restorePlayer(sessionId, mcToken, playerId);
+    } catch (e) {
+      setActionError(e.message);
+    }
+  }
+
+  async function handleDeletePlayer(playerId) {
+    try {
+      await deletePlayerPermanent(sessionId, mcToken, playerId);
+    } catch (e) {
+      setActionError(e.message);
+    }
+  }
+
+  async function handleReset() {
+    try {
+      await resetBoard(sessionId, mcToken);
+      setConfirmReset(false);
+    } catch (e) {
+      setActionError(e.message);
+      setConfirmReset(false);
     }
   }
 
@@ -119,7 +148,7 @@ export default function SessionPage({ sessionId, navigate }) {
     </div>
   );
 
-  const { players, currentRound, rounds, courts } = session;
+  const { players, archivedPlayers = [], currentRound, rounds, courts } = session;
   const roundNumber = currentRound?.roundNumber ?? 0;
   const canGenerate = players.length >= 4;
 
@@ -145,11 +174,26 @@ export default function SessionPage({ sessionId, navigate }) {
       {isMC && (
         <div className="mc-banner">
           <span className="mc-badge">You are the MC</span>
-          <div className="court-control">
-            <span className="label">Courts</span>
-            <button className="stepper-btn stepper-btn--sm" onClick={() => handleCourtsChange(-1)}>−</button>
-            <span className="stepper-value stepper-value--sm">{courts}</span>
-            <button className="stepper-btn stepper-btn--sm" onClick={() => handleCourtsChange(1)}>+</button>
+          <div className="mc-banner-right">
+            <div className="court-control">
+              <span className="label">Courts</span>
+              <button className="stepper-btn stepper-btn--sm" onClick={() => handleCourtsChange(-1)}>−</button>
+              <span className="stepper-value stepper-value--sm">{courts}</span>
+              <button className="stepper-btn stepper-btn--sm" onClick={() => handleCourtsChange(1)}>+</button>
+            </div>
+            {rounds.length > 0 && (
+              confirmReset ? (
+                <div className="reset-confirm">
+                  <span className="reset-confirm__label">Are you sure?</span>
+                  <button className="reset-confirm__yes" onClick={handleReset}>Yes</button>
+                  <button className="btn-ghost btn-sm" onClick={() => setConfirmReset(false)}>No</button>
+                </div>
+              ) : (
+                <button className="btn-ghost btn-sm" onClick={() => setConfirmReset(true)}>
+                  Reset Board
+                </button>
+              )
+            )}
           </div>
         </div>
       )}
@@ -211,23 +255,20 @@ export default function SessionPage({ sessionId, navigate }) {
       {/* Round history */}
       {rounds.length > 1 && (
         <div className="section">
-          <h2 className="section-title">Previous rounds</h2>
-          {[...rounds].reverse().slice(1).map(round => (
-            <details key={round.id} className="history-round">
-              <summary className="history-summary">Round {round.roundNumber}</summary>
-              <div className="history-courts">
-                {round.courts.map(court => (
-                  <CourtCard key={court.id} court={court} isMC={false} />
-                ))}
-                {round.byes.length > 0 && (
-                  <div className="byes-row">
-                    <span className="byes-label">Sat out:</span>
-                    {round.byes.map(p => <span key={p.id} className="bye-chip">{p.name}</span>)}
-                  </div>
-                )}
-              </div>
-            </details>
-          ))}
+          <button
+            className="history-toggle"
+            onClick={() => setHistoryOpen(o => !o)}
+            aria-expanded={historyOpen}
+          >
+            <span className={`history-toggle__chevron${historyOpen ? ' history-toggle__chevron--open' : ''}`}>›</span>
+            Previous rounds
+            <span className="history-toggle__count">{rounds.length - 1}</span>
+          </button>
+          {historyOpen && (
+            <div className="history-table-container">
+              <RoundHistoryTable rounds={[...rounds].slice(0, -1).reverse()} />
+            </div>
+          )}
         </div>
       )}
 
@@ -246,6 +287,11 @@ export default function SessionPage({ sessionId, navigate }) {
           )}
         </div>
         <div className="player-list">
+          {players.length === 0 && (
+            <div className="player-row player-row--empty">
+              <span className="muted">No active players</span>
+            </div>
+          )}
           {players.map(p => (
             <div key={p.id} className="player-row">
               {editingPlayerId === p.id ? (
@@ -286,6 +332,33 @@ export default function SessionPage({ sessionId, navigate }) {
             </div>
           ))}
         </div>
+
+        {isMC && archivedPlayers.length > 0 && (
+          <div className="past-players">
+            <p className="past-players__label">Past players</p>
+            <div className="player-list">
+              {archivedPlayers.map(p => (
+                <div key={p.id} className="player-row">
+                  <span className="past-player-name">{p.name}</span>
+                  <div className="player-actions">
+                    <button
+                      className="btn-ghost btn-sm"
+                      onClick={() => handleRestorePlayer(p.id)}
+                      aria-label={`Restore ${p.name}`}
+                    >
+                      Restore
+                    </button>
+                    <button
+                      className="btn-ghost btn-sm danger"
+                      onClick={() => handleDeletePlayer(p.id)}
+                      aria-label={`Delete ${p.name}`}
+                    >🗑</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modals */}

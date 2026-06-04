@@ -2,7 +2,7 @@ function pairKey(a, b) {
   return a < b ? `${a}|${b}` : `${b}|${a}`;
 }
 
-function shuffle(arr) {
+export function shuffle(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -30,22 +30,24 @@ function bestTeamSplit(four, history) {
   return best;
 }
 
-export function generateRound(players, pairingHistory, byeHistory, numCourts) {
+// byeQueue: ordered array of player IDs representing the static bye rotation.
+// The first numByes players in the queue sit out; they are rotated to the back.
+// Returns { courts, byes, updatedQueue }.
+export function generateRound(players, pairingHistory, byeQueue, numCourts) {
   if (players.length < 4) throw new Error('Need at least 4 players');
 
   const maxActive = Math.floor(Math.min(players.length, numCourts * 4) / 4) * 4;
   const numCourtsActual = maxActive / 4;
+  const numByes = players.length - maxActive;
 
-  // Players with fewer byes get priority to play
-  const sorted = [...players].sort((a, b) => {
-    const diff = (byeHistory[a.id] || 0) - (byeHistory[b.id] || 0);
-    return diff !== 0 ? diff : Math.random() - 0.5;
-  });
+  // Take byes from the front of the static queue and rotate them to the back.
+  const byes = byeQueue.slice(0, numByes);
+  const updatedQueue = [...byeQueue.slice(numByes), ...byes];
 
-  const active = sorted.slice(0, maxActive).map(p => p.id);
-  const byes = sorted.slice(maxActive).map(p => p.id);
+  const byeSet = new Set(byes);
+  const active = players.filter(p => !byeSet.has(p.id)).map(p => p.id);
 
-  // Random restarts — keep the arrangement with the fewest repeated partnerships
+  // Random restarts — keep the arrangement with the fewest repeated partnerships.
   let bestCourts = null;
   let bestScore = Infinity;
   const attempts = Math.min(500, Math.max(100, 10 * players.length));
@@ -69,5 +71,5 @@ export function generateRound(players, pairingHistory, byeHistory, numCourts) {
     }
   }
 
-  return { courts: bestCourts, byes };
+  return { courts: bestCourts, byes, updatedQueue };
 }

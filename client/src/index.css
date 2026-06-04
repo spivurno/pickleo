@@ -119,16 +119,43 @@ input { font: inherit; }
   background: var(--green-light);
   border-bottom: 1px solid #bbf7d0;
   font-size: .9rem;
+  gap: .5rem;
+  flex-wrap: wrap;
 }
 .mc-badge {
   font-weight: 600;
   color: var(--green-dark);
+}
+.mc-banner-right {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  flex-wrap: wrap;
 }
 .court-control {
   display: flex;
   align-items: center;
   gap: .4rem;
 }
+.reset-confirm {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+}
+.reset-confirm__label {
+  font-size: .8rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.reset-confirm__yes {
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--danger);
+  padding: .35rem .65rem;
+  border-radius: var(--radius-sm);
+  transition: background .15s;
+}
+.reset-confirm__yes:hover { background: #fee2e2; }
 
 /* ── Court cards ───────────────────────────────────────────────────────── */
 .courts-grid {
@@ -243,25 +270,106 @@ input { font: inherit; }
 }
 .empty-round__text { color: var(--muted); }
 
-/* ── History ───────────────────────────────────────────────────────────── */
-.history-round {
-  margin-bottom: .5rem;
-}
-.history-summary {
-  cursor: pointer;
-  font-weight: 600;
-  padding: .5rem .25rem;
-  color: var(--muted);
-  font-size: .9rem;
-  list-style: none;
+/* ── Round history toggle ──────────────────────────────────────────────── */
+.history-toggle {
   display: flex;
   align-items: center;
   gap: .4rem;
+  font-size: .875rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  padding: .25rem 0;
+  transition: color .15s;
+  width: 100%;
+  text-align: left;
+  margin-bottom: .25rem;
 }
-.history-summary::-webkit-details-marker { display: none; }
-.history-summary::before { content: '›'; font-size: 1.1rem; transition: transform .2s; }
-details[open] .history-summary::before { transform: rotate(90deg); }
-.history-courts { padding-top: .5rem; }
+.history-toggle:hover { color: var(--text); }
+.history-toggle__chevron {
+  font-size: 1rem;
+  transition: transform .2s;
+  line-height: 1;
+}
+.history-toggle__chevron--open { transform: rotate(90deg); }
+.history-toggle__count {
+  margin-left: auto;
+  font-size: .75rem;
+  font-weight: 600;
+  background: var(--border);
+  color: var(--muted);
+  border-radius: 99px;
+  padding: .1rem .5rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.history-table-container { margin-top: .5rem; }
+
+/* ── Round history table ───────────────────────────────────────────────── */
+.history-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .85rem;
+}
+.history-th {
+  padding: .45rem .75rem;
+  text-align: left;
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--muted);
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+  background: var(--bg);
+}
+.history-th--rnd { width: 3.5rem; text-align: center; }
+.history-th--byes { min-width: 7rem; }
+.history-td {
+  padding: .55rem .75rem;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+}
+.history-tr:last-child .history-td { border-bottom: none; }
+.history-tr--alt .history-td { background: var(--bg); }
+.history-td--rnd {
+  text-align: center;
+  font-weight: 700;
+  color: var(--muted);
+  font-size: .8rem;
+  white-space: nowrap;
+}
+.history-td--court { min-width: 140px; }
+.history-td--byes {
+  font-size: .8rem;
+  color: var(--muted);
+}
+.history-matchup {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.35;
+}
+.history-team {
+  font-weight: 500;
+  color: var(--text);
+}
+.history-vs {
+  font-size: .65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--muted);
+  margin: 1px 0;
+}
+.history-none { color: var(--muted); opacity: .35; }
 
 /* ── Player list ───────────────────────────────────────────────────────── */
 .player-list {
@@ -279,6 +387,27 @@ details[open] .history-summary::before { transform: rotate(90deg); }
   font-size: .95rem;
 }
 .player-row:last-child { border-bottom: none; }
+
+/* ── Past players ──────────────────────────────────────────────────────── */
+.past-players {
+  margin-top: .75rem;
+}
+.past-players__label {
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--muted);
+  margin-bottom: .35rem;
+  padding: 0 .1rem;
+}
+.past-player-name {
+  color: var(--muted);
+}
+.player-row--empty {
+  justify-content: center;
+  padding: .75rem;
+}
 
 /* ── Action error ──────────────────────────────────────────────────────── */
 .action-error {

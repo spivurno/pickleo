@@ -47,11 +47,11 @@ export default function HomePage({ navigate }) {
         {error && <p className="error-text">{error}</p>}
 
         <button className="btn-primary btn-lg" onClick={handleCreate} disabled={loading}>
-          {loading ? 'Creating…' : 'Create Session'}
+          {loading ? 'Creating…' : 'Create Board'}
         </button>
 
         <p className="home-hint">
-          You'll get a link to share with other players.
+          Share the link — your board persists across games.
         </p>
       </div>
     </div>

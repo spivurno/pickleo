@@ -5,7 +5,7 @@ import { randomBytes, randomUUID } from 'crypto';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import * as db from './db.js';
-import { generateRound } from './algorithm.js';
+import { generateRound, shuffle } from './algorithm.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -91,22 +91,48 @@ app.patch('/api/sessions/:sessionId/courts', requireMC, (req, res) => {
 app.post('/api/sessions/:sessionId/players', requireMC, (req, res) => {
   const name = (req.body.name || '').trim();
   if (!name) return res.status(400).json({ error: 'Name required' });
-  const playerId = randomUUID();
-  db.addPlayer(req.params.sessionId, playerId, name);
-  broadcastState(req.params.sessionId);
-  res.json({ playerId });
+  try {
+    const playerId = randomUUID();
+    db.addPlayer(req.params.sessionId, playerId, name);
+    broadcastState(req.params.sessionId);
+    res.json({ playerId });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
 });
 
 app.patch('/api/sessions/:sessionId/players/:playerId', requireMC, (req, res) => {
   const name = (req.body.name || '').trim();
   if (!name) return res.status(400).json({ error: 'Name required' });
-  db.renamePlayer(req.params.sessionId, req.params.playerId, name);
+  try {
+    db.renamePlayer(req.params.sessionId, req.params.playerId, name);
+    broadcastState(req.params.sessionId);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.delete('/api/sessions/:sessionId/players/:playerId', requireMC, (req, res) => {
+  db.archivePlayer(req.params.sessionId, req.params.playerId);
   broadcastState(req.params.sessionId);
   res.json({ ok: true });
 });
 
-app.delete('/api/sessions/:sessionId/players/:playerId', requireMC, (req, res) => {
-  db.removePlayer(req.params.sessionId, req.params.playerId);
+app.post('/api/sessions/:sessionId/players/:playerId/restore', requireMC, (req, res) => {
+  db.restorePlayer(req.params.sessionId, req.params.playerId);
+  broadcastState(req.params.sessionId);
+  res.json({ ok: true });
+});
+
+app.delete('/api/sessions/:sessionId/players/:playerId/permanent', requireMC, (req, res) => {
+  db.deletePlayer(req.params.sessionId, req.params.playerId);
+  broadcastState(req.params.sessionId);
+  res.json({ ok: true });
+});
+
+app.post('/api/sessions/:sessionId/reset', requireMC, (req, res) => {
+  db.resetBoard(req.params.sessionId);
   broadcastState(req.params.sessionId);
   res.json({ ok: true });
 });
@@ -126,8 +152,11 @@ app.post('/api/sessions/:sessionId/rounds', requireMC, (req, res) => {
     return res.status(400).json({ error: 'Need at least 4 players to generate a round' });
   }
   try {
-    const round = generateRound(state.players, state.pairingHistory, state.byeHistory, state.courts);
+    // Initialize the bye queue on first round; persist for all subsequent rounds.
+    const byeQueue = state.byeQueue ?? shuffle(state.players.map(p => p.id));
+    const round = generateRound(state.players, state.pairingHistory, byeQueue, state.courts);
     db.saveRound(sessionId, randomUUID(), round);
+    db.updateByeQueue(sessionId, round.updatedQueue);
     broadcastState(sessionId);
     res.json({ ok: true });
   } catch (e) {

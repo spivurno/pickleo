@@ -16,7 +16,8 @@ db.exec(`
     mc_token TEXT NOT NULL,
     courts INTEGER NOT NULL DEFAULT 2,
     created_at INTEGER NOT NULL,
-    expires_at INTEGER NOT NULL
+    expires_at INTEGER NOT NULL,
+    bye_queue TEXT
   );
 
   CREATE TABLE IF NOT EXISTS players (
@@ -24,6 +25,7 @@ db.exec(`
     session_id TEXT NOT NULL,
     name TEXT NOT NULL,
     added_at INTEGER NOT NULL,
+    archived INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
   );
 
@@ -55,6 +57,10 @@ db.exec(`
   );
 `);
 
+// Migrations for databases that predate newer columns
+try { db.exec('ALTER TABLE players ADD COLUMN archived INTEGER NOT NULL DEFAULT 0'); } catch {}
+try { db.exec('ALTER TABLE sessions ADD COLUMN bye_queue TEXT'); } catch {}
+
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 export function createSession(id, mcToken, courts) {
@@ -75,16 +81,64 @@ export function updateCourts(sessionId, courts) {
 }
 
 export function addPlayer(sessionId, playerId, name) {
-  db.prepare(
-    'INSERT INTO players (id, session_id, name, added_at) VALUES (?, ?, ?, ?)'
-  ).run(playerId, sessionId, name, Date.now());
+  db.transaction(() => {
+    const clash = db.prepare(
+      'SELECT 1 FROM players WHERE session_id = ? AND archived = 0 AND LOWER(name) = LOWER(?)'
+    ).get(sessionId, name);
+    if (clash) throw new Error(`A player named "${name}" is already in this session`);
+    db.prepare(
+      'INSERT INTO players (id, session_id, name, added_at, archived) VALUES (?, ?, ?, ?, 0)'
+    ).run(playerId, sessionId, name, Date.now());
+    // Append to queue if it has been initialized
+    const row = db.prepare('SELECT bye_queue FROM sessions WHERE id = ?').get(sessionId);
+    if (row?.bye_queue) {
+      const q = JSON.parse(row.bye_queue);
+      q.push(playerId);
+      db.prepare('UPDATE sessions SET bye_queue = ? WHERE id = ?').run(JSON.stringify(q), sessionId);
+    }
+  })();
 }
 
-export function removePlayer(sessionId, playerId) {
-  db.prepare('DELETE FROM players WHERE id = ? AND session_id = ?').run(playerId, sessionId);
+export function archivePlayer(sessionId, playerId) {
+  db.transaction(() => {
+    db.prepare('UPDATE players SET archived = 1 WHERE id = ? AND session_id = ?').run(playerId, sessionId);
+    const row = db.prepare('SELECT bye_queue FROM sessions WHERE id = ?').get(sessionId);
+    if (row?.bye_queue) {
+      const q = JSON.parse(row.bye_queue).filter(id => id !== playerId);
+      db.prepare('UPDATE sessions SET bye_queue = ? WHERE id = ?').run(JSON.stringify(q), sessionId);
+    }
+  })();
+}
+
+export function deletePlayer(sessionId, playerId) {
+  db.transaction(() => {
+    db.prepare('DELETE FROM players WHERE id = ? AND session_id = ?').run(playerId, sessionId);
+    // Remove from queue if present (shouldn't be active, but be safe)
+    const row = db.prepare('SELECT bye_queue FROM sessions WHERE id = ?').get(sessionId);
+    if (row?.bye_queue) {
+      const q = JSON.parse(row.bye_queue).filter(id => id !== playerId);
+      db.prepare('UPDATE sessions SET bye_queue = ? WHERE id = ?').run(JSON.stringify(q), sessionId);
+    }
+  })();
+}
+
+export function restorePlayer(sessionId, playerId) {
+  db.transaction(() => {
+    db.prepare('UPDATE players SET archived = 0 WHERE id = ? AND session_id = ?').run(playerId, sessionId);
+    const row = db.prepare('SELECT bye_queue FROM sessions WHERE id = ?').get(sessionId);
+    if (row?.bye_queue) {
+      const q = JSON.parse(row.bye_queue);
+      if (!q.includes(playerId)) q.push(playerId);
+      db.prepare('UPDATE sessions SET bye_queue = ? WHERE id = ?').run(JSON.stringify(q), sessionId);
+    }
+  })();
 }
 
 export function renamePlayer(sessionId, playerId, name) {
+  const clash = db.prepare(
+    'SELECT 1 FROM players WHERE session_id = ? AND archived = 0 AND LOWER(name) = LOWER(?) AND id != ?'
+  ).get(sessionId, name, playerId);
+  if (clash) throw new Error(`A player named "${name}" is already in this session`);
   db.prepare('UPDATE players SET name = ? WHERE id = ? AND session_id = ?').run(name, playerId, sessionId);
 }
 
@@ -92,6 +146,18 @@ export function claimHost(sessionId) {
   const token = randomUUID().replace(/-/g, '') + randomUUID().replace(/-/g, '');
   db.prepare('UPDATE sessions SET mc_token = ? WHERE id = ?').run(token, sessionId);
   return token;
+}
+
+export function resetBoard(sessionId) {
+  db.transaction(() => {
+    db.prepare('DELETE FROM rounds WHERE session_id = ?').run(sessionId);
+    db.prepare('UPDATE players SET archived = 1 WHERE session_id = ?').run(sessionId);
+    db.prepare('UPDATE sessions SET bye_queue = NULL WHERE id = ?').run(sessionId);
+  })();
+}
+
+export function updateByeQueue(sessionId, queue) {
+  db.prepare('UPDATE sessions SET bye_queue = ? WHERE id = ?').run(JSON.stringify(queue), sessionId);
 }
 
 export function saveRound(sessionId, roundId, { courts, byes }) {
@@ -135,12 +201,10 @@ export function swapPlayer(sessionId, roundId, playerOutId, playerInId) {
     `).get(roundId, playerInId, playerInId, playerInId, playerInId);
 
     if (inGame) {
-      // Swap two active players between courts
       const inPos = cols.find(c => inGame[c] === playerInId);
       db.prepare(`UPDATE games SET ${outPos}=? WHERE id=?`).run(playerInId, outGame.id);
       db.prepare(`UPDATE games SET ${inPos}=? WHERE id=?`).run(playerOutId, inGame.id);
     } else {
-      // Swap active player with a bye player
       db.prepare(`UPDATE games SET ${outPos}=? WHERE id=?`).run(playerInId, outGame.id);
       db.prepare('DELETE FROM byes WHERE round_id=? AND player_id=?').run(roundId, playerInId);
       db.prepare(
@@ -155,9 +219,17 @@ export function getSessionState(sessionId) {
   if (!session || Date.now() > session.expires_at) return null;
 
   const players = db.prepare(
-    'SELECT id, name FROM players WHERE session_id = ? ORDER BY added_at'
+    'SELECT id, name FROM players WHERE session_id = ? AND archived = 0 ORDER BY added_at'
   ).all(sessionId);
-  const playerMap = Object.fromEntries(players.map(p => [p.id, p.name]));
+
+  const archivedPlayers = db.prepare(
+    'SELECT id, name FROM players WHERE session_id = ? AND archived = 1 ORDER BY added_at'
+  ).all(sessionId);
+
+  const allPlayers = db.prepare(
+    'SELECT id, name FROM players WHERE session_id = ?'
+  ).all(sessionId);
+  const playerMap = Object.fromEntries(allPlayers.map(p => [p.id, p.name]));
 
   const resolve = id => ({ id, name: playerMap[id] ?? '[Removed]' });
 
@@ -186,7 +258,6 @@ export function getSessionState(sessionId) {
     };
   });
 
-  // Build pairing history from all games (partnerships only — same team)
   const allGames = db.prepare(
     'SELECT t1p1, t1p2, t2p1, t2p2 FROM games WHERE session_id = ?'
   ).all(sessionId);
@@ -208,14 +279,19 @@ export function getSessionState(sessionId) {
     byeHistory[b.player_id] = (byeHistory[b.player_id] || 0) + 1;
   }
 
+  const lastRound = enrichedRounds.at(-1);
+  const byeQueue = session.bye_queue ? JSON.parse(session.bye_queue) : null;
+
   return {
     id: session.id,
     courts: session.courts,
     players,
+    archivedPlayers,
     rounds: enrichedRounds,
-    currentRound: enrichedRounds.at(-1) ?? null,
+    currentRound: lastRound ?? null,
     pairingHistory,
     byeHistory,
+    byeQueue,
   };
 }
 

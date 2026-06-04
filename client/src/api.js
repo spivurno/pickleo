@@ -62,6 +62,27 @@ export async function swapPlayer(sessionId, mcToken, roundId, playerOutId, playe
   }));
 }
 
+export async function restorePlayer(sessionId, mcToken, playerId) {
+  return handle(await fetch(`/api/sessions/${sessionId}/players/${playerId}/restore`, {
+    method: 'POST',
+    headers: mcHeaders(mcToken),
+  }));
+}
+
+export async function deletePlayerPermanent(sessionId, mcToken, playerId) {
+  return handle(await fetch(`/api/sessions/${sessionId}/players/${playerId}/permanent`, {
+    method: 'DELETE',
+    headers: mcHeaders(mcToken),
+  }));
+}
+
+export async function resetBoard(sessionId, mcToken) {
+  return handle(await fetch(`/api/sessions/${sessionId}/reset`, {
+    method: 'POST',
+    headers: mcHeaders(mcToken),
+  }));
+}
+
 export async function claimHost(sessionId) {
   return handle(await fetch(`/api/sessions/${sessionId}/claim-host`, {
     method: 'POST',
