@@ -46,7 +46,7 @@ wss.on('connection', (ws, req) => {
   // Send current state immediately on connect
   const state = db.getSessionState(sessionId);
   if (state) ws.send(JSON.stringify({ type: 'state', data: state }));
-  else ws.send(JSON.stringify({ type: 'error', message: 'Session not found' }));
+  else ws.send(JSON.stringify({ type: 'error', message: 'Board not found' }));
 
   ws.on('close', () => {
     const room = rooms.get(sessionId);
@@ -77,7 +77,7 @@ app.post('/api/sessions', (req, res) => {
 
 app.get('/api/sessions/:sessionId', (req, res) => {
   const state = db.getSessionState(req.params.sessionId);
-  if (!state) return res.status(404).json({ error: 'Session not found or expired' });
+  if (!state) return res.status(404).json({ error: 'Board not found or expired' });
   res.json(state);
 });
 
@@ -139,7 +139,7 @@ app.post('/api/sessions/:sessionId/reset', requireMC, (req, res) => {
 
 app.post('/api/sessions/:sessionId/claim-host', (req, res) => {
   const state = db.getSessionState(req.params.sessionId);
-  if (!state) return res.status(404).json({ error: 'Session not found' });
+  if (!state) return res.status(404).json({ error: 'Board not found' });
   const mcToken = db.claimHost(req.params.sessionId);
   res.json({ mcToken });
 });
@@ -147,7 +147,7 @@ app.post('/api/sessions/:sessionId/claim-host', (req, res) => {
 app.post('/api/sessions/:sessionId/rounds', requireMC, (req, res) => {
   const { sessionId } = req.params;
   const state = db.getSessionState(sessionId);
-  if (!state) return res.status(404).json({ error: 'Session not found' });
+  if (!state) return res.status(404).json({ error: 'Board not found' });
   if (state.players.length < 4) {
     return res.status(400).json({ error: 'Need at least 4 players to generate a round' });
   }

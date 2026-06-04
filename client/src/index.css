@@ -634,3 +634,5 @@ input { font: inherit; }
 /* ── Utilities ─────────────────────────────────────────────────────────── */
 .muted { color: var(--muted); }
 .error-text { color: var(--danger); font-size: .9rem; margin-bottom: .75rem; }
+.field-error { color: var(--danger); font-size: .85rem; margin-top: .35rem; }
+.input--error { border-color: var(--danger); }

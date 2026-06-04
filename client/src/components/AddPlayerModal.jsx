@@ -5,6 +5,7 @@ export default function AddPlayerModal({ sessionId, mcToken, onClose, onError })
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [lastAdded, setLastAdded] = useState('');
+  const [fieldError, setFieldError] = useState('');
   const inputRef = useRef(null);
 
   useEffect(() => { inputRef.current?.focus(); }, []);
@@ -14,13 +15,14 @@ export default function AddPlayerModal({ sessionId, mcToken, onClose, onError })
     const trimmed = name.trim();
     if (!trimmed) return;
     setLoading(true);
+    setFieldError('');
     try {
       await addPlayer(sessionId, mcToken, trimmed);
       setLastAdded(trimmed);
       setName('');
       inputRef.current?.focus();
     } catch (err) {
-      onError(err.message);
+      setFieldError(err.message);
     } finally {
       setLoading(false);
     }
@@ -44,13 +46,14 @@ export default function AddPlayerModal({ sessionId, mcToken, onClose, onError })
             <input
               id="player-name"
               ref={inputRef}
-              className="input"
+              className={`input${fieldError ? ' input--error' : ''}`}
               type="text"
               value={name}
-              onChange={e => setName(e.target.value)}
+              onChange={e => { setName(e.target.value); setFieldError(''); }}
               placeholder="Enter name…"
               maxLength={40}
             />
+            {fieldError && <p className="field-error">{fieldError}</p>}
           </div>
           <div className="add-player-actions">
             <button className="btn-primary" type="submit" disabled={!name.trim() || loading}>

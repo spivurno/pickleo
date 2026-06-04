@@ -85,7 +85,7 @@ export function addPlayer(sessionId, playerId, name) {
     const clash = db.prepare(
       'SELECT 1 FROM players WHERE session_id = ? AND archived = 0 AND LOWER(name) = LOWER(?)'
     ).get(sessionId, name);
-    if (clash) throw new Error(`A player named "${name}" is already in this session`);
+    if (clash) throw new Error(`A player named "${name}" is already on this board`);
     db.prepare(
       'INSERT INTO players (id, session_id, name, added_at, archived) VALUES (?, ?, ?, ?, 0)'
     ).run(playerId, sessionId, name, Date.now());
@@ -138,7 +138,7 @@ export function renamePlayer(sessionId, playerId, name) {
   const clash = db.prepare(
     'SELECT 1 FROM players WHERE session_id = ? AND archived = 0 AND LOWER(name) = LOWER(?) AND id != ?'
   ).get(sessionId, name, playerId);
-  if (clash) throw new Error(`A player named "${name}" is already in this session`);
+  if (clash) throw new Error(`A player named "${name}" is already on this board`);
   db.prepare('UPDATE players SET name = ? WHERE id = ? AND session_id = ?').run(name, playerId, sessionId);
 }
 
