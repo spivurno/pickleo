@@ -62,6 +62,13 @@ export async function swapPlayer(sessionId, mcToken, roundId, playerOutId, playe
   }));
 }
 
+export async function claimHost(sessionId) {
+  return handle(await fetch(`/api/sessions/${sessionId}/claim-host`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  }));
+}
+
 export async function updateCourts(sessionId, mcToken, courts) {
   return handle(await fetch(`/api/sessions/${sessionId}/courts`, {
     method: 'PATCH',

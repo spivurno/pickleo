@@ -111,6 +111,13 @@ app.delete('/api/sessions/:sessionId/players/:playerId', requireMC, (req, res) =
   res.json({ ok: true });
 });
 
+app.post('/api/sessions/:sessionId/claim-host', (req, res) => {
+  const state = db.getSessionState(req.params.sessionId);
+  if (!state) return res.status(404).json({ error: 'Session not found' });
+  const mcToken = db.claimHost(req.params.sessionId);
+  res.json({ mcToken });
+});
+
 app.post('/api/sessions/:sessionId/rounds', requireMC, (req, res) => {
   const { sessionId } = req.params;
   const state = db.getSessionState(sessionId);

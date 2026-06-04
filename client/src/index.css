@@ -484,6 +484,24 @@ details[open] .history-summary::before { transform: rotate(90deg); }
 .add-player-actions .btn-primary { flex: 1; }
 .add-player-actions .btn-secondary { flex: 1; }
 
+/* ── Claim host bar ────────────────────────────────────────────────────── */
+.claim-host-bar {
+  text-align: center;
+  padding: 2rem 1rem 3rem;
+}
+.claim-host-btn {
+  font-size: .8rem;
+  color: var(--muted);
+  border-bottom: 1px dashed currentColor;
+  padding-bottom: 1px;
+  transition: color .15s;
+}
+.claim-host-btn:hover { color: var(--text); }
+.claim-host-note {
+  font-size: .8rem;
+  color: var(--muted);
+}
+
 /* ── Utilities ─────────────────────────────────────────────────────────── */
 .muted { color: var(--muted); }
 .error-text { color: var(--danger); font-size: .9rem; margin-bottom: .75rem; }

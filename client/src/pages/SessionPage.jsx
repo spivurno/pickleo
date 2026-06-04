@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { getSession, generateRound, addPlayer, removePlayer, renamePlayer, updateCourts } from '../api.js';
+import { getSession, generateRound, addPlayer, removePlayer, renamePlayer, updateCourts, claimHost } from '../api.js';
 import { useSocket } from '../useSocket.js';
 import CourtCard from '../components/CourtCard.jsx';
 import SwapModal from '../components/SwapModal.jsx';
@@ -18,7 +18,7 @@ export default function SessionPage({ sessionId, navigate }) {
   const [editingName, setEditingName] = useState('');
   const addPlayerBtnRef = useRef(null);
 
-  const mcToken = localStorage.getItem(`mc_${sessionId}`);
+  const [mcToken, setMcToken] = useState(() => localStorage.getItem(`mc_${sessionId}`));
   const isMC = Boolean(mcToken);
 
   // Initial load
@@ -82,6 +82,16 @@ export default function SessionPage({ sessionId, navigate }) {
     try {
       localStorage.setItem('lastCourtCount', next);
       await updateCourts(sessionId, mcToken, next);
+    } catch (e) {
+      setActionError(e.message);
+    }
+  }
+
+  async function handleClaim() {
+    try {
+      const { mcToken: newToken } = await claimHost(sessionId);
+      localStorage.setItem(`mc_${sessionId}`, newToken);
+      setMcToken(newToken);
     } catch (e) {
       setActionError(e.message);
     }
@@ -300,6 +310,16 @@ export default function SessionPage({ sessionId, navigate }) {
           onError={setActionError}
         />
       )}
+
+      <div className="claim-host-bar">
+        {isMC ? (
+          <span className="claim-host-note">You are the host</span>
+        ) : (
+          <button className="claim-host-btn" onClick={handleClaim}>
+            Claim host role
+          </button>
+        )}
+      </div>
     </div>
   );
 }

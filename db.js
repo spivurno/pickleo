@@ -88,6 +88,12 @@ export function renamePlayer(sessionId, playerId, name) {
   db.prepare('UPDATE players SET name = ? WHERE id = ? AND session_id = ?').run(name, playerId, sessionId);
 }
 
+export function claimHost(sessionId) {
+  const token = randomUUID().replace(/-/g, '') + randomUUID().replace(/-/g, '');
+  db.prepare('UPDATE sessions SET mc_token = ? WHERE id = ?').run(token, sessionId);
+  return token;
+}
+
 export function saveRound(sessionId, roundId, { courts, byes }) {
   const roundNumber =
     db.prepare('SELECT COUNT(*) AS c FROM rounds WHERE session_id = ?').get(sessionId).c + 1;
