@@ -154,7 +154,7 @@ app.post('/api/sessions/:sessionId/rounds', requireMC, (req, res) => {
   try {
     // Initialize the bye queue on first round; persist for all subsequent rounds.
     const byeQueue = state.byeQueue ?? shuffle(state.players.map(p => p.id));
-    const round = generateRound(state.players, state.pairingHistory, byeQueue, state.courts);
+    const round = generateRound(state.players, state.pairingHistory, state.opponentHistory, byeQueue, state.courts);
     db.saveRound(sessionId, randomUUID(), round);
     db.updateByeQueue(sessionId, round.updatedQueue);
     broadcastState(sessionId);

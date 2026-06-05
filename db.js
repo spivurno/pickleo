@@ -262,13 +262,18 @@ export function getSessionState(sessionId) {
     'SELECT t1p1, t1p2, t2p1, t2p2 FROM games WHERE session_id = ?'
   ).all(sessionId);
   const pairingHistory = {};
+  const opponentHistory = {};
   for (const g of allGames) {
-    const add = (a, b) => {
+    const addPair = (a, b, hist) => {
       const k = pairKey(a, b);
-      pairingHistory[k] = (pairingHistory[k] || 0) + 1;
+      hist[k] = (hist[k] || 0) + 1;
     };
-    add(g.t1p1, g.t1p2);
-    add(g.t2p1, g.t2p2);
+    addPair(g.t1p1, g.t1p2, pairingHistory);
+    addPair(g.t2p1, g.t2p2, pairingHistory);
+    addPair(g.t1p1, g.t2p1, opponentHistory);
+    addPair(g.t1p1, g.t2p2, opponentHistory);
+    addPair(g.t1p2, g.t2p1, opponentHistory);
+    addPair(g.t1p2, g.t2p2, opponentHistory);
   }
 
   const allByes = db.prepare(
@@ -290,6 +295,7 @@ export function getSessionState(sessionId) {
     rounds: enrichedRounds,
     currentRound: lastRound ?? null,
     pairingHistory,
+    opponentHistory,
     byeHistory,
     byeQueue,
   };
