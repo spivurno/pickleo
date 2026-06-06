@@ -19,7 +19,16 @@ export default function SessionPage({ sessionId, navigate }) {
   const [editingName, setEditingName] = useState('');
   const [historyOpen, setHistoryOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [displayMode, setDisplayMode] = useState(() => localStorage.getItem('displayMode') === 'true');
   const addPlayerBtnRef = useRef(null);
+
+  function toggleDisplayMode() {
+    setDisplayMode(prev => {
+      const next = !prev;
+      localStorage.setItem('displayMode', String(next));
+      return next;
+    });
+  }
 
   const [hostToken, setHostToken] = useState(() =>
     localStorage.getItem(`host_${sessionId}`) || localStorage.getItem(`mc_${sessionId}`)
@@ -155,7 +164,7 @@ export default function SessionPage({ sessionId, navigate }) {
   const canGenerate = players.length >= 4;
 
   return (
-    <div className="session-page">
+    <div className={`session-page${displayMode ? ' display-mode' : ''}`}>
       {/* Header */}
       <header className="session-header">
         <div className="header-left">
@@ -388,6 +397,15 @@ export default function SessionPage({ sessionId, navigate }) {
           onError={setActionError}
         />
       )}
+
+      <div className="display-mode-bar">
+        <button
+          className={`display-mode-btn${displayMode ? ' display-mode-btn--on' : ''}`}
+          onClick={toggleDisplayMode}
+        >
+          {displayMode ? 'Exit Display Mode' : 'Display Mode'}
+        </button>
+      </div>
 
       <div className="claim-host-bar">
         {isHost ? (

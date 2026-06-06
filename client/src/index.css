@@ -1,5 +1,6 @@
 /* ── Variables ─────────────────────────────────────────────────────────── */
 :root {
+  --court-name-size: 1rem;
   --green: #16a34a;
   --green-dark: #15803d;
   --green-light: #dcfce7;
@@ -215,6 +216,7 @@ input { font: inherit; }
   gap: .1rem;
 }
 .team-slash {
+  font-size: var(--court-name-size);
   font-weight: 300;
   color: var(--muted);
   opacity: 0.35;
@@ -224,7 +226,7 @@ input { font: inherit; }
 
 .player-name {
   display: block;
-  font-size: 1rem;
+  font-size: var(--court-name-size);
   font-weight: 500;
   padding: .2rem 0;
 }
@@ -234,7 +236,7 @@ input { font: inherit; }
   justify-content: space-between;
   width: 100%;
   border-radius: var(--radius-sm);
-  font-size: 1rem;
+  font-size: var(--court-name-size);
   font-weight: 500;
   text-align: left;
   transition: background .15s;
@@ -624,6 +626,32 @@ input { font: inherit; }
 }
 .add-player-actions .btn-primary { flex: 1; }
 .add-player-actions .btn-secondary { flex: 1; }
+
+/* ── Display mode ──────────────────────────────────────────────────────── */
+.display-mode { --court-name-size: 1.4rem; }
+.display-mode .team { padding: .85rem .75rem; }
+.display-mode .court-label { font-size: 1rem; padding: .5rem .75rem; }
+
+.display-mode-bar {
+  text-align: center;
+  padding: 1.5rem 1rem .5rem;
+}
+.display-mode-btn {
+  font-size: .8rem;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: .35rem .85rem;
+  transition: background .15s, color .15s;
+}
+.display-mode-btn:hover { background: var(--border); color: var(--text); }
+.display-mode-btn--on {
+  background: var(--green-light);
+  border-color: #86efac;
+  color: var(--green-dark);
+  font-weight: 600;
+}
+.display-mode-btn--on:hover { background: #bbf7d0; }
 
 /* ── Claim host bar ────────────────────────────────────────────────────── */
 .claim-host-bar {
