@@ -61,13 +61,13 @@ db.exec(`
 try { db.exec('ALTER TABLE players ADD COLUMN archived INTEGER NOT NULL DEFAULT 0'); } catch {}
 try { db.exec('ALTER TABLE sessions ADD COLUMN bye_queue TEXT'); } catch {}
 
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 export function createSession(id, hostToken, courts) {
   const now = Date.now();
   db.prepare(
     'INSERT INTO sessions (id, mc_token, courts, created_at, expires_at) VALUES (?, ?, ?, ?, ?)'
-  ).run(id, hostToken, courts, now, now + WEEK_MS);
+  ).run(id, hostToken, courts, now, now + THIRTY_DAYS_MS);
 }
 
 export function validateHostToken(sessionId, token) {
@@ -217,6 +217,7 @@ export function swapPlayer(sessionId, roundId, playerOutId, playerInId) {
 export function getSessionState(sessionId) {
   const session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(sessionId);
   if (!session || Date.now() > session.expires_at) return null;
+  db.prepare('UPDATE sessions SET expires_at = ? WHERE id = ?').run(Date.now() + THIRTY_DAYS_MS, sessionId);
 
   const players = db.prepare(
     'SELECT id, name FROM players WHERE session_id = ? AND archived = 0 ORDER BY added_at'
