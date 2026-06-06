@@ -642,7 +642,7 @@ input { font: inherit; }
 }
 .display-mode .team { padding: 1rem; }
 .display-mode .court-label { font-size: 1rem; padding: .65rem 1rem; }
-.display-mode .vs-divider { font-size: 1rem; padding: .5rem 0; }
+.display-mode .vs-divider { padding: .5rem 0; }
 /* Use explicit selectors (higher specificity than container query) so these
    override the @container font-size on narrow screens too */
 .display-mode .player-name,
@@ -650,6 +650,7 @@ input { font: inherit; }
   font-size: 1.8rem;
   text-align: center;
   justify-content: center;
+  width: auto;
 }
 .display-mode .team-slash { font-size: 1.8rem; }
 
