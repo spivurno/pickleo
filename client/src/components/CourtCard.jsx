@@ -9,23 +9,32 @@ function PlayerSlot({ player, isHost, onSwap }) {
   );
 }
 
+function TeamRow({ players, isHost, onSwap }) {
+  return (
+    <div className="team-row">
+      {players.map((p, i) => (
+        <React.Fragment key={p.id}>
+          {i > 0 && <span className="team-slash">/</span>}
+          <PlayerSlot player={p} isHost={isHost} onSwap={onSwap} />
+        </React.Fragment>
+      ))}
+    </div>
+  );
+}
+
 export default function CourtCard({ court, isHost, onSwap = () => {} }) {
   return (
     <div className="court-card">
       <div className="court-label">Court {court.courtNumber}</div>
 
       <div className="team team--1">
-        {court.team1.map(p => (
-          <PlayerSlot key={p.id} player={p} isHost={isHost} onSwap={onSwap} />
-        ))}
+        <TeamRow players={court.team1} isHost={isHost} onSwap={onSwap} />
       </div>
 
       <div className="vs-divider">vs</div>
 
       <div className="team team--2">
-        {court.team2.map(p => (
-          <PlayerSlot key={p.id} player={p} isHost={isHost} onSwap={onSwap} />
-        ))}
+        <TeamRow players={court.team2} isHost={isHost} onSwap={onSwap} />
       </div>
     </div>
   );

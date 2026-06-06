@@ -208,6 +208,20 @@ input { font: inherit; }
   letter-spacing: .1em;
 }
 
+.team-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .1rem;
+}
+.team-slash {
+  font-weight: 300;
+  color: var(--muted);
+  opacity: 0.35;
+  padding: 0 .15rem;
+  user-select: none;
+}
+
 .player-name {
   display: block;
   font-size: 1rem;
@@ -234,8 +248,7 @@ input { font: inherit; }
     text-align: center;
     justify-content: center;
   }
-  .team { text-align: center; }
-  .team-label { text-align: center; }
+  .team-slash { font-size: 1.8rem; }
 }
 
 /* ── Byes ──────────────────────────────────────────────────────────────── */
