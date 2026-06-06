@@ -5,7 +5,7 @@ function PlayerSlot({ player, isHost, onSwap }) {
   return (
     <button className="player-slot-btn" onClick={() => onSwap(player)}>
       {player.name}
-      <span className="swap-hint">swap</span>
+      <span className="swap-hint">⇄</span>
     </button>
   );
 }

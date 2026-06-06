@@ -163,6 +163,7 @@ input { font: inherit; }
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: .75rem;
   margin-bottom: .75rem;
+  container-type: inline-size;
 }
 
 .court-card {
@@ -227,15 +228,24 @@ input { font: inherit; }
 }
 .player-slot-btn:hover { background: rgba(0,0,0,.06); }
 .swap-hint {
-  font-size: .7rem;
-  font-weight: 600;
+  font-size: 1rem;
   color: var(--green-dark);
-  opacity: 0;
+  opacity: 0.3;
   transition: opacity .15s;
-  text-transform: uppercase;
-  letter-spacing: .05em;
 }
 .player-slot-btn:hover .swap-hint { opacity: 1; }
+
+@container (max-width: 571px) {
+  .player-name,
+  .player-slot-btn {
+    font-size: 2rem;
+    text-align: center;
+    justify-content: center;
+  }
+  .team { text-align: center; }
+  .team-label { text-align: center; }
+  .swap-hint { font-size: 1.25rem; }
+}
 
 /* ── Byes ──────────────────────────────────────────────────────────────── */
 .byes-row {
