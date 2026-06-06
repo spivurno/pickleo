@@ -57,9 +57,9 @@ wss.on('connection', (ws, req) => {
   });
 });
 
-// MC auth middleware
-function requireMC(req, res, next) {
-  if (!db.validateMCToken(req.params.sessionId, req.headers['x-mc-token'])) {
+// Host auth middleware
+function requireHost(req, res, next) {
+  if (!db.validateHostToken(req.params.sessionId, req.headers['x-host-token'])) {
     return res.status(403).json({ error: 'Forbidden' });
   }
   next();
@@ -70,9 +70,9 @@ function requireMC(req, res, next) {
 app.post('/api/sessions', (req, res) => {
   const courts = Math.max(1, parseInt(req.body.courts) || 2);
   const sessionId = randomBytes(4).toString('hex'); // 8-char shareable ID
-  const mcToken = randomBytes(20).toString('hex');
-  db.createSession(sessionId, mcToken, courts);
-  res.json({ sessionId, mcToken });
+  const hostToken = randomBytes(20).toString('hex');
+  db.createSession(sessionId, hostToken, courts);
+  res.json({ sessionId, hostToken });
 });
 
 app.get('/api/sessions/:sessionId', (req, res) => {
@@ -81,14 +81,14 @@ app.get('/api/sessions/:sessionId', (req, res) => {
   res.json(state);
 });
 
-app.patch('/api/sessions/:sessionId/courts', requireMC, (req, res) => {
+app.patch('/api/sessions/:sessionId/courts', requireHost, (req, res) => {
   const courts = Math.max(1, parseInt(req.body.courts) || 1);
   db.updateCourts(req.params.sessionId, courts);
   broadcastState(req.params.sessionId);
   res.json({ ok: true });
 });
 
-app.post('/api/sessions/:sessionId/players', requireMC, (req, res) => {
+app.post('/api/sessions/:sessionId/players', requireHost, (req, res) => {
   const name = (req.body.name || '').trim();
   if (!name) return res.status(400).json({ error: 'Name required' });
   try {
@@ -101,7 +101,7 @@ app.post('/api/sessions/:sessionId/players', requireMC, (req, res) => {
   }
 });
 
-app.patch('/api/sessions/:sessionId/players/:playerId', requireMC, (req, res) => {
+app.patch('/api/sessions/:sessionId/players/:playerId', requireHost, (req, res) => {
   const name = (req.body.name || '').trim();
   if (!name) return res.status(400).json({ error: 'Name required' });
   try {
@@ -113,25 +113,25 @@ app.patch('/api/sessions/:sessionId/players/:playerId', requireMC, (req, res) =>
   }
 });
 
-app.delete('/api/sessions/:sessionId/players/:playerId', requireMC, (req, res) => {
+app.delete('/api/sessions/:sessionId/players/:playerId', requireHost, (req, res) => {
   db.archivePlayer(req.params.sessionId, req.params.playerId);
   broadcastState(req.params.sessionId);
   res.json({ ok: true });
 });
 
-app.post('/api/sessions/:sessionId/players/:playerId/restore', requireMC, (req, res) => {
+app.post('/api/sessions/:sessionId/players/:playerId/restore', requireHost, (req, res) => {
   db.restorePlayer(req.params.sessionId, req.params.playerId);
   broadcastState(req.params.sessionId);
   res.json({ ok: true });
 });
 
-app.delete('/api/sessions/:sessionId/players/:playerId/permanent', requireMC, (req, res) => {
+app.delete('/api/sessions/:sessionId/players/:playerId/permanent', requireHost, (req, res) => {
   db.deletePlayer(req.params.sessionId, req.params.playerId);
   broadcastState(req.params.sessionId);
   res.json({ ok: true });
 });
 
-app.post('/api/sessions/:sessionId/reset', requireMC, (req, res) => {
+app.post('/api/sessions/:sessionId/reset', requireHost, (req, res) => {
   db.resetBoard(req.params.sessionId);
   broadcastState(req.params.sessionId);
   res.json({ ok: true });
@@ -140,11 +140,11 @@ app.post('/api/sessions/:sessionId/reset', requireMC, (req, res) => {
 app.post('/api/sessions/:sessionId/claim-host', (req, res) => {
   const state = db.getSessionState(req.params.sessionId);
   if (!state) return res.status(404).json({ error: 'Board not found' });
-  const mcToken = db.claimHost(req.params.sessionId);
-  res.json({ mcToken });
+  const hostToken = db.claimHost(req.params.sessionId);
+  res.json({ hostToken });
 });
 
-app.post('/api/sessions/:sessionId/rounds', requireMC, (req, res) => {
+app.post('/api/sessions/:sessionId/rounds', requireHost, (req, res) => {
   const { sessionId } = req.params;
   const state = db.getSessionState(sessionId);
   if (!state) return res.status(404).json({ error: 'Board not found' });
@@ -164,7 +164,7 @@ app.post('/api/sessions/:sessionId/rounds', requireMC, (req, res) => {
   }
 });
 
-app.post('/api/sessions/:sessionId/rounds/:roundId/swap', requireMC, (req, res) => {
+app.post('/api/sessions/:sessionId/rounds/:roundId/swap', requireHost, (req, res) => {
   const { sessionId, roundId } = req.params;
   const { playerOutId, playerInId } = req.body;
   if (!playerOutId || !playerInId) {

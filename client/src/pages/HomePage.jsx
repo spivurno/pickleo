@@ -10,9 +10,9 @@ export default function HomePage({ navigate }) {
     setLoading(true);
     setError('');
     try {
-      const { sessionId, mcToken } = await createSession(courts);
+      const { sessionId, hostToken } = await createSession(courts);
       localStorage.setItem('lastCourtCount', courts);
-      localStorage.setItem(`mc_${sessionId}`, mcToken);
+      localStorage.setItem(`host_${sessionId}`, hostToken);
       navigate(`/${sessionId}`);
     } catch (e) {
       setError(e.message);
@@ -24,11 +24,11 @@ export default function HomePage({ navigate }) {
     <div className="page-center">
       <div className="home-card">
         <div className="home-logo">🏓</div>
-        <h1 className="home-title">Pickleball Matchups</h1>
-        <p className="home-subtitle">Smart doubles matchup generator</p>
+        <h1 className="home-title">Pickleo</h1>
+        <p className="home-subtitle">Free pickleball matchup generator</p>
 
         <div className="form-group">
-          <label className="label" htmlFor="courts">Number of courts</label>
+          <label className="label" htmlFor="courts">How many courts are available?</label>
           <div className="court-stepper">
             <button
               className="stepper-btn"

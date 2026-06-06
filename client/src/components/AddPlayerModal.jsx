@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { addPlayer } from '../api.js';
 
-export default function AddPlayerModal({ sessionId, mcToken, onClose, onError }) {
+export default function AddPlayerModal({ sessionId, hostToken, onClose, onError }) {
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [lastAdded, setLastAdded] = useState('');
@@ -17,7 +17,7 @@ export default function AddPlayerModal({ sessionId, mcToken, onClose, onError })
     setLoading(true);
     setFieldError('');
     try {
-      await addPlayer(sessionId, mcToken, trimmed);
+      await addPlayer(sessionId, hostToken, trimmed);
       setLastAdded(trimmed);
       setName('');
       inputRef.current?.focus();

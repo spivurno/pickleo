@@ -68,7 +68,6 @@ input { font: inherit; }
 .home-card {
   background: var(--surface);
   border-radius: var(--radius);
-  box-shadow: var(--shadow-md);
   padding: 2rem 1.75rem;
   width: 100%;
   max-width: 380px;
@@ -110,8 +109,8 @@ input { font: inherit; }
   50% { opacity: .4; }
 }
 
-/* ── MC banner ─────────────────────────────────────────────────────────── */
-.mc-banner {
+/* ── Host banner ───────────────────────────────────────────────────────── */
+.host-banner {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -122,11 +121,11 @@ input { font: inherit; }
   gap: .5rem;
   flex-wrap: wrap;
 }
-.mc-badge {
+.host-badge {
   font-weight: 600;
   color: var(--green-dark);
 }
-.mc-banner-right {
+.host-banner-right {
   display: flex;
   align-items: center;
   gap: .75rem;
@@ -156,6 +155,7 @@ input { font: inherit; }
   transition: background .15s;
 }
 .reset-confirm__yes:hover { background: #fee2e2; }
+.host-banner .btn-ghost:hover { background: #bbf7d0; color: var(--text); }
 
 /* ── Court cards ───────────────────────────────────────────────────────── */
 .courts-grid {
@@ -168,7 +168,6 @@ input { font: inherit; }
 .court-card {
   background: var(--surface);
   border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
   border: 1px solid var(--border);
   overflow: hidden;
 }
@@ -312,7 +311,6 @@ input { font: inherit; }
   border-radius: var(--radius);
   border: 1px solid var(--border);
   background: var(--surface);
-  box-shadow: var(--shadow-sm);
 }
 .history-table {
   width: 100%;
@@ -533,7 +531,7 @@ input { font: inherit; }
   font-size: .85rem;
   font-weight: 600;
   color: var(--muted);
-  margin-bottom: .4rem;
+  margin-bottom: 0;
 }
 .input {
   width: 100%;

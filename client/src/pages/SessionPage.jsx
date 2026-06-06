@@ -21,8 +21,10 @@ export default function SessionPage({ sessionId, navigate }) {
   const [confirmReset, setConfirmReset] = useState(false);
   const addPlayerBtnRef = useRef(null);
 
-  const [mcToken, setMcToken] = useState(() => localStorage.getItem(`mc_${sessionId}`));
-  const isMC = Boolean(mcToken);
+  const [hostToken, setHostToken] = useState(() =>
+    localStorage.getItem(`host_${sessionId}`) || localStorage.getItem(`mc_${sessionId}`)
+  );
+  const isHost = Boolean(hostToken);
 
   // Initial load
   useEffect(() => {
@@ -42,7 +44,7 @@ export default function SessionPage({ sessionId, navigate }) {
     setGenerating(true);
     setActionError('');
     try {
-      await generateRound(sessionId, mcToken);
+      await generateRound(sessionId, hostToken);
     } catch (e) {
       setActionError(e.message);
     } finally {
@@ -52,7 +54,7 @@ export default function SessionPage({ sessionId, navigate }) {
 
   async function handleRemovePlayer(playerId) {
     try {
-      await removePlayer(sessionId, mcToken, playerId);
+      await removePlayer(sessionId, hostToken, playerId);
     } catch (e) {
       setActionError(e.message);
     }
@@ -60,7 +62,7 @@ export default function SessionPage({ sessionId, navigate }) {
 
   async function handleRestorePlayer(playerId) {
     try {
-      await restorePlayer(sessionId, mcToken, playerId);
+      await restorePlayer(sessionId, hostToken, playerId);
     } catch (e) {
       setActionError(e.message);
     }
@@ -68,7 +70,7 @@ export default function SessionPage({ sessionId, navigate }) {
 
   async function handleDeletePlayer(playerId) {
     try {
-      await deletePlayerPermanent(sessionId, mcToken, playerId);
+      await deletePlayerPermanent(sessionId, hostToken, playerId);
     } catch (e) {
       setActionError(e.message);
     }
@@ -76,7 +78,7 @@ export default function SessionPage({ sessionId, navigate }) {
 
   async function handleReset() {
     try {
-      await resetBoard(sessionId, mcToken);
+      await resetBoard(sessionId, hostToken);
       setConfirmReset(false);
     } catch (e) {
       setActionError(e.message);
@@ -98,7 +100,7 @@ export default function SessionPage({ sessionId, navigate }) {
     const trimmed = editingName.trim();
     if (!trimmed) return cancelEdit();
     try {
-      await renamePlayer(sessionId, mcToken, playerId, trimmed);
+      await renamePlayer(sessionId, hostToken, playerId, trimmed);
     } catch (e) {
       setActionError(e.message);
     } finally {
@@ -110,7 +112,7 @@ export default function SessionPage({ sessionId, navigate }) {
     const next = Math.max(1, (session?.courts ?? 1) + delta);
     try {
       localStorage.setItem('lastCourtCount', next);
-      await updateCourts(sessionId, mcToken, next);
+      await updateCourts(sessionId, hostToken, next);
     } catch (e) {
       setActionError(e.message);
     }
@@ -118,9 +120,9 @@ export default function SessionPage({ sessionId, navigate }) {
 
   async function handleClaim() {
     try {
-      const { mcToken: newToken } = await claimHost(sessionId);
-      localStorage.setItem(`mc_${sessionId}`, newToken);
-      setMcToken(newToken);
+      const { hostToken: newToken } = await claimHost(sessionId);
+      localStorage.setItem(`host_${sessionId}`, newToken);
+      setHostToken(newToken);
     } catch (e) {
       setActionError(e.message);
     }
@@ -159,7 +161,7 @@ export default function SessionPage({ sessionId, navigate }) {
         <div className="header-left">
           <span className="header-logo">🏓</span>
           <div>
-            <h1 className="header-title">Pickleball</h1>
+            <h1 className="header-title">Pickleo</h1>
             {roundNumber > 0 && <p className="header-sub">Round {roundNumber}</p>}
           </div>
         </div>
@@ -168,13 +170,16 @@ export default function SessionPage({ sessionId, navigate }) {
           <button className="btn-ghost btn-sm" onClick={copyLink}>
             {copied ? '✓ Copied' : 'Share link'}
           </button>
+          <button className="btn-ghost btn-sm muted" onClick={() => navigate('/')}>
+            New board
+          </button>
         </div>
       </header>
 
-      {isMC && (
-        <div className="mc-banner">
-          <span className="mc-badge">You are the MC</span>
-          <div className="mc-banner-right">
+      {isHost && (
+        <div className="host-banner">
+          <span className="host-badge">You are the host</span>
+          <div className="host-banner-right">
             <div className="court-control">
               <span className="label">Courts</span>
               <button className="stepper-btn stepper-btn--sm" onClick={() => handleCourtsChange(-1)}>−</button>
@@ -213,7 +218,7 @@ export default function SessionPage({ sessionId, navigate }) {
                 <CourtCard
                   key={court.id}
                   court={court}
-                  isMC={isMC}
+                  isHost={isHost}
                   onSwap={player => setSwapTarget({ roundId: currentRound.id, player })}
                 />
               ))}
@@ -239,8 +244,8 @@ export default function SessionPage({ sessionId, navigate }) {
         )}
       </div>
 
-      {/* MC action */}
-      {isMC && (
+      {/* Host action */}
+      {isHost && (
         <div className="section section--action">
           <button
             className="btn-primary btn-lg btn-full"
@@ -276,7 +281,7 @@ export default function SessionPage({ sessionId, navigate }) {
       <div className="section">
         <div className="section-header">
           <h2 className="section-title">Players ({players.length})</h2>
-          {isMC && (
+          {isHost && (
             <button
               ref={addPlayerBtnRef}
               className="btn-secondary btn-sm"
@@ -313,7 +318,7 @@ export default function SessionPage({ sessionId, navigate }) {
               ) : (
                 <>
                   <span>{p.name}</span>
-                  {isMC && (
+                  {isHost && (
                     <div className="player-actions">
                       <button
                         className="btn-ghost btn-sm"
@@ -333,7 +338,7 @@ export default function SessionPage({ sessionId, navigate }) {
           ))}
         </div>
 
-        {isMC && archivedPlayers.length > 0 && (
+        {isHost && archivedPlayers.length > 0 && (
           <div className="past-players">
             <p className="past-players__label">Past players</p>
             <div className="player-list">
@@ -365,7 +370,7 @@ export default function SessionPage({ sessionId, navigate }) {
       {swapTarget && (
         <SwapModal
           sessionId={sessionId}
-          mcToken={mcToken}
+          hostToken={hostToken}
           roundId={swapTarget.roundId}
           playerOut={swapTarget.player}
           currentRound={currentRound}
@@ -378,14 +383,14 @@ export default function SessionPage({ sessionId, navigate }) {
       {showAddPlayer && (
         <AddPlayerModal
           sessionId={sessionId}
-          mcToken={mcToken}
+          hostToken={hostToken}
           onClose={() => setShowAddPlayer(false)}
           onError={setActionError}
         />
       )}
 
       <div className="claim-host-bar">
-        {isMC ? (
+        {isHost ? (
           <span className="claim-host-note">You are the host</span>
         ) : (
           <button className="claim-host-btn" onClick={handleClaim}>

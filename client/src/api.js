@@ -1,6 +1,6 @@
-function mcHeaders(mcToken) {
+function hostHeaders(hostToken) {
   const h = { 'Content-Type': 'application/json' };
-  if (mcToken) h['X-MC-Token'] = mcToken;
+  if (hostToken) h['X-Host-Token'] = hostToken;
   return h;
 }
 
@@ -24,62 +24,62 @@ export async function getSession(sessionId) {
   return handle(res);
 }
 
-export async function addPlayer(sessionId, mcToken, name) {
+export async function addPlayer(sessionId, hostToken, name) {
   return handle(await fetch(`/api/sessions/${sessionId}/players`, {
     method: 'POST',
-    headers: mcHeaders(mcToken),
+    headers: hostHeaders(hostToken),
     body: JSON.stringify({ name }),
   }));
 }
 
-export async function renamePlayer(sessionId, mcToken, playerId, name) {
+export async function renamePlayer(sessionId, hostToken, playerId, name) {
   return handle(await fetch(`/api/sessions/${sessionId}/players/${playerId}`, {
     method: 'PATCH',
-    headers: mcHeaders(mcToken),
+    headers: hostHeaders(hostToken),
     body: JSON.stringify({ name }),
   }));
 }
 
-export async function removePlayer(sessionId, mcToken, playerId) {
+export async function removePlayer(sessionId, hostToken, playerId) {
   return handle(await fetch(`/api/sessions/${sessionId}/players/${playerId}`, {
     method: 'DELETE',
-    headers: mcHeaders(mcToken),
+    headers: hostHeaders(hostToken),
   }));
 }
 
-export async function generateRound(sessionId, mcToken) {
+export async function generateRound(sessionId, hostToken) {
   return handle(await fetch(`/api/sessions/${sessionId}/rounds`, {
     method: 'POST',
-    headers: mcHeaders(mcToken),
+    headers: hostHeaders(hostToken),
   }));
 }
 
-export async function swapPlayer(sessionId, mcToken, roundId, playerOutId, playerInId) {
+export async function swapPlayer(sessionId, hostToken, roundId, playerOutId, playerInId) {
   return handle(await fetch(`/api/sessions/${sessionId}/rounds/${roundId}/swap`, {
     method: 'POST',
-    headers: mcHeaders(mcToken),
+    headers: hostHeaders(hostToken),
     body: JSON.stringify({ playerOutId, playerInId }),
   }));
 }
 
-export async function restorePlayer(sessionId, mcToken, playerId) {
+export async function restorePlayer(sessionId, hostToken, playerId) {
   return handle(await fetch(`/api/sessions/${sessionId}/players/${playerId}/restore`, {
     method: 'POST',
-    headers: mcHeaders(mcToken),
+    headers: hostHeaders(hostToken),
   }));
 }
 
-export async function deletePlayerPermanent(sessionId, mcToken, playerId) {
+export async function deletePlayerPermanent(sessionId, hostToken, playerId) {
   return handle(await fetch(`/api/sessions/${sessionId}/players/${playerId}/permanent`, {
     method: 'DELETE',
-    headers: mcHeaders(mcToken),
+    headers: hostHeaders(hostToken),
   }));
 }
 
-export async function resetBoard(sessionId, mcToken) {
+export async function resetBoard(sessionId, hostToken) {
   return handle(await fetch(`/api/sessions/${sessionId}/reset`, {
     method: 'POST',
-    headers: mcHeaders(mcToken),
+    headers: hostHeaders(hostToken),
   }));
 }
 
@@ -90,10 +90,10 @@ export async function claimHost(sessionId) {
   }));
 }
 
-export async function updateCourts(sessionId, mcToken, courts) {
+export async function updateCourts(sessionId, hostToken, courts) {
   return handle(await fetch(`/api/sessions/${sessionId}/courts`, {
     method: 'PATCH',
-    headers: mcHeaders(mcToken),
+    headers: hostHeaders(hostToken),
     body: JSON.stringify({ courts }),
   }));
 }

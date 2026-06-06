@@ -1,7 +1,7 @@
 import React from 'react';
 
-function PlayerSlot({ player, isMC, onSwap }) {
-  if (!isMC) return <span className="player-name">{player.name}</span>;
+function PlayerSlot({ player, isHost, onSwap }) {
+  if (!isHost) return <span className="player-name">{player.name}</span>;
   return (
     <button className="player-slot-btn" onClick={() => onSwap(player)}>
       {player.name}
@@ -10,7 +10,7 @@ function PlayerSlot({ player, isMC, onSwap }) {
   );
 }
 
-export default function CourtCard({ court, isMC, onSwap = () => {} }) {
+export default function CourtCard({ court, isHost, onSwap = () => {} }) {
   return (
     <div className="court-card">
       <div className="court-label">Court {court.courtNumber}</div>
@@ -18,7 +18,7 @@ export default function CourtCard({ court, isMC, onSwap = () => {} }) {
       <div className="team team--1">
         <span className="team-label">Team 1</span>
         {court.team1.map(p => (
-          <PlayerSlot key={p.id} player={p} isMC={isMC} onSwap={onSwap} />
+          <PlayerSlot key={p.id} player={p} isHost={isHost} onSwap={onSwap} />
         ))}
       </div>
 
@@ -27,7 +27,7 @@ export default function CourtCard({ court, isMC, onSwap = () => {} }) {
       <div className="team team--2">
         <span className="team-label">Team 2</span>
         {court.team2.map(p => (
-          <PlayerSlot key={p.id} player={p} isMC={isMC} onSwap={onSwap} />
+          <PlayerSlot key={p.id} player={p} isHost={isHost} onSwap={onSwap} />
         ))}
       </div>
     </div>

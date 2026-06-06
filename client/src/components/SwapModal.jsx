@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { swapPlayer } from '../api.js';
 
 export default function SwapModal({
-  sessionId, mcToken, roundId, playerOut,
+  sessionId, hostToken, roundId, playerOut,
   currentRound, allPlayers, onClose, onError,
 }) {
   const [loading, setLoading] = useState(false);
@@ -20,7 +20,7 @@ export default function SwapModal({
   async function handleSwap(playerIn) {
     setLoading(true);
     try {
-      await swapPlayer(sessionId, mcToken, roundId, playerOut.id, playerIn.id);
+      await swapPlayer(sessionId, hostToken, roundId, playerOut.id, playerIn.id);
       onClose();
     } catch (e) {
       onError(e.message);

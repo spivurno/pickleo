@@ -63,14 +63,14 @@ try { db.exec('ALTER TABLE sessions ADD COLUMN bye_queue TEXT'); } catch {}
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
-export function createSession(id, mcToken, courts) {
+export function createSession(id, hostToken, courts) {
   const now = Date.now();
   db.prepare(
     'INSERT INTO sessions (id, mc_token, courts, created_at, expires_at) VALUES (?, ?, ?, ?, ?)'
-  ).run(id, mcToken, courts, now, now + WEEK_MS);
+  ).run(id, hostToken, courts, now, now + WEEK_MS);
 }
 
-export function validateMCToken(sessionId, token) {
+export function validateHostToken(sessionId, token) {
   if (!token) return false;
   const row = db.prepare('SELECT mc_token FROM sessions WHERE id = ?').get(sessionId);
   return row?.mc_token === token;
