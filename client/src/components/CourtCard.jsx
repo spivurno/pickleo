@@ -15,7 +15,6 @@ export default function CourtCard({ court, isHost, onSwap = () => {} }) {
       <div className="court-label">Court {court.courtNumber}</div>
 
       <div className="team team--1">
-        <span className="team-label">Team 1</span>
         {court.team1.map(p => (
           <PlayerSlot key={p.id} player={p} isHost={isHost} onSwap={onSwap} />
         ))}
@@ -24,7 +23,6 @@ export default function CourtCard({ court, isHost, onSwap = () => {} }) {
       <div className="vs-divider">vs</div>
 
       <div className="team team--2">
-        <span className="team-label">Team 2</span>
         {court.team2.map(p => (
           <PlayerSlot key={p.id} player={p} isHost={isHost} onSwap={onSwap} />
         ))}
