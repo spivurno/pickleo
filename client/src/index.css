@@ -219,7 +219,6 @@ input { font: inherit; }
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: .3rem .4rem;
   border-radius: var(--radius-sm);
   font-size: 1rem;
   font-weight: 500;
@@ -227,24 +226,16 @@ input { font: inherit; }
   transition: background .15s;
 }
 .player-slot-btn:hover { background: rgba(0,0,0,.06); }
-.swap-hint {
-  font-size: 1rem;
-  color: var(--green-dark);
-  opacity: 0.3;
-  transition: opacity .15s;
-}
-.player-slot-btn:hover .swap-hint { opacity: 1; }
 
 @container (max-width: 571px) {
   .player-name,
   .player-slot-btn {
-    font-size: 2rem;
+    font-size: 1.8rem;
     text-align: center;
     justify-content: center;
   }
   .team { text-align: center; }
   .team-label { text-align: center; }
-  .swap-hint { font-size: 1.25rem; }
 }
 
 /* ── Byes ──────────────────────────────────────────────────────────────── */
