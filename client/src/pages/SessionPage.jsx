@@ -4,6 +4,7 @@ import { useSocket } from '../useSocket.js';
 import CourtCard from '../components/CourtCard.jsx';
 import SwapModal from '../components/SwapModal.jsx';
 import AddPlayerModal from '../components/AddPlayerModal.jsx';
+import ResetConfirmModal from '../components/ResetConfirmModal.jsx';
 import RoundHistoryTable from '../components/RoundHistoryTable.jsx';
 
 export default function SessionPage({ sessionId, navigate }) {
@@ -19,13 +20,14 @@ export default function SessionPage({ sessionId, navigate }) {
   const [editingName, setEditingName] = useState('');
   const [historyOpen, setHistoryOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
-  const [displayMode, setDisplayMode] = useState(() => localStorage.getItem('displayMode') === 'true');
+  const displayModeKey = `displayMode_${sessionId}`;
+  const [displayMode, setDisplayMode] = useState(() => localStorage.getItem(displayModeKey) === 'true');
   const addPlayerBtnRef = useRef(null);
 
   function toggleDisplayMode() {
     setDisplayMode(prev => {
       const next = !prev;
-      localStorage.setItem('displayMode', String(next));
+      localStorage.setItem(displayModeKey, String(next));
       return next;
     });
   }
@@ -196,17 +198,9 @@ export default function SessionPage({ sessionId, navigate }) {
               <button className="stepper-btn stepper-btn--sm" onClick={() => handleCourtsChange(1)}>+</button>
             </div>
             {rounds.length > 0 && (
-              confirmReset ? (
-                <div className="reset-confirm">
-                  <span className="reset-confirm__label">Are you sure?</span>
-                  <button className="reset-confirm__yes" onClick={handleReset}>Yes</button>
-                  <button className="btn-ghost btn-sm" onClick={() => setConfirmReset(false)}>No</button>
-                </div>
-              ) : (
-                <button className="btn-ghost btn-sm" onClick={() => setConfirmReset(true)}>
-                  Reset Board
-                </button>
-              )
+              <button className="btn-ghost btn-sm" onClick={() => setConfirmReset(true)}>
+                Reset Board
+              </button>
             )}
           </div>
         </div>
@@ -395,6 +389,13 @@ export default function SessionPage({ sessionId, navigate }) {
           hostToken={hostToken}
           onClose={() => setShowAddPlayer(false)}
           onError={setActionError}
+        />
+      )}
+
+      {confirmReset && (
+        <ResetConfirmModal
+          onConfirm={handleReset}
+          onClose={() => setConfirmReset(false)}
         />
       )}
 

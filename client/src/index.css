@@ -137,26 +137,28 @@ input { font: inherit; }
   align-items: center;
   gap: .4rem;
 }
-.reset-confirm {
-  display: flex;
-  align-items: center;
-  gap: .35rem;
-}
-.reset-confirm__label {
-  font-size: .8rem;
-  color: var(--muted);
-  white-space: nowrap;
-}
-.reset-confirm__yes {
-  font-size: .82rem;
+.btn-danger {
+  background: var(--danger);
+  color: white;
   font-weight: 600;
-  color: var(--danger);
-  padding: .35rem .65rem;
   border-radius: var(--radius-sm);
+  padding: .55rem 1.25rem;
   transition: background .15s;
+  flex: 1;
 }
-.reset-confirm__yes:hover { background: #fee2e2; }
+.btn-danger:hover { background: #b91c1c; }
+.reset-modal-body {
+  font-size: .9rem;
+  color: var(--muted);
+  margin-bottom: 1.25rem;
+  line-height: 1.5;
+}
 .host-banner .btn-ghost:hover { background: #bbf7d0; color: var(--text); }
+
+@media (max-width: 480px) {
+  .host-banner { justify-content: center; text-align: center; }
+  .host-banner-right { justify-content: center; }
+}
 
 /* ── Court cards ───────────────────────────────────────────────────────── */
 .courts-grid {
@@ -217,7 +219,7 @@ input { font: inherit; }
 }
 .team-slash {
   font-size: var(--court-name-size);
-  font-weight: 300;
+  font-weight: 700;
   color: var(--muted);
   opacity: 0.35;
   padding: 0 .15rem;
@@ -233,25 +235,17 @@ input { font: inherit; }
 .player-slot-btn {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   width: 100%;
   border-radius: var(--radius-sm);
   font-size: var(--court-name-size);
   font-weight: 500;
-  text-align: left;
+  text-align: center;
   transition: background .15s;
 }
 .player-slot-btn:hover { background: rgba(0,0,0,.06); }
 
-@container (max-width: 571px) {
-  .player-name,
-  .player-slot-btn {
-    font-size: 1.8rem;
-    text-align: center;
-    justify-content: center;
-  }
-  .team-slash { font-size: 1.8rem; }
-}
+
 
 /* ── Byes ──────────────────────────────────────────────────────────────── */
 .byes-row {
@@ -273,6 +267,21 @@ input { font: inherit; }
   padding: .2rem .65rem;
   font-size: .85rem;
   font-weight: 500;
+}
+
+.display-mode .byes-row {
+  justify-content: center;
+  gap: .5rem;
+  padding: .75rem 0;
+}
+.display-mode .byes-label {
+  font-size: 1rem;
+  width: 100%;
+  text-align: center;
+}
+.display-mode .bye-chip {
+  font-size: 1.8rem;
+  padding: .3rem 1rem;
 }
 
 /* ── Empty state ───────────────────────────────────────────────────────── */
@@ -628,9 +637,21 @@ input { font: inherit; }
 .add-player-actions .btn-secondary { flex: 1; }
 
 /* ── Display mode ──────────────────────────────────────────────────────── */
-.display-mode { --court-name-size: 1.4rem; }
-.display-mode .team { padding: .85rem .75rem; }
-.display-mode .court-label { font-size: 1rem; padding: .5rem .75rem; }
+.display-mode .courts-grid {
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+}
+.display-mode .team { padding: 1rem; }
+.display-mode .court-label { font-size: 1rem; padding: .65rem 1rem; }
+.display-mode .vs-divider { font-size: 1rem; padding: .5rem 0; }
+/* Use explicit selectors (higher specificity than container query) so these
+   override the @container font-size on narrow screens too */
+.display-mode .player-name,
+.display-mode .player-slot-btn {
+  font-size: 1.8rem;
+  text-align: center;
+  justify-content: center;
+}
+.display-mode .team-slash { font-size: 1.8rem; }
 
 .display-mode-bar {
   text-align: center;

@@ -14,7 +14,7 @@ function TeamRow({ players, isHost, onSwap }) {
     <div className="team-row">
       {players.map((p, i) => (
         <React.Fragment key={p.id}>
-          {i > 0 && <span className="team-slash">/</span>}
+          {i > 0 && <span className="team-slash">+</span>}
           <PlayerSlot player={p} isHost={isHost} onSwap={onSwap} />
         </React.Fragment>
       ))}
