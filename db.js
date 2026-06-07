@@ -60,6 +60,7 @@ db.exec(`
 // Migrations for databases that predate newer columns
 try { db.exec('ALTER TABLE players ADD COLUMN archived INTEGER NOT NULL DEFAULT 0'); } catch {}
 try { db.exec('ALTER TABLE sessions ADD COLUMN bye_queue TEXT'); } catch {}
+try { db.exec('ALTER TABLE sessions ADD COLUMN host_version INTEGER NOT NULL DEFAULT 0'); } catch {}
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -144,8 +145,9 @@ export function renamePlayer(sessionId, playerId, name) {
 
 export function claimHost(sessionId) {
   const token = randomUUID().replace(/-/g, '') + randomUUID().replace(/-/g, '');
-  db.prepare('UPDATE sessions SET mc_token = ? WHERE id = ?').run(token, sessionId);
-  return token;
+  db.prepare('UPDATE sessions SET mc_token = ?, host_version = host_version + 1 WHERE id = ?').run(token, sessionId);
+  const row = db.prepare('SELECT host_version FROM sessions WHERE id = ?').get(sessionId);
+  return { token, version: row.host_version };
 }
 
 export function resetBoard(sessionId) {
@@ -291,6 +293,7 @@ export function getSessionState(sessionId) {
   return {
     id: session.id,
     courts: session.courts,
+    hostVersion: session.host_version ?? 0,
     players,
     archivedPlayers,
     rounds: enrichedRounds,

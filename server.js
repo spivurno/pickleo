@@ -140,8 +140,9 @@ app.post('/api/sessions/:sessionId/reset', requireHost, (req, res) => {
 app.post('/api/sessions/:sessionId/claim-host', (req, res) => {
   const state = db.getSessionState(req.params.sessionId);
   if (!state) return res.status(404).json({ error: 'Board not found' });
-  const hostToken = db.claimHost(req.params.sessionId);
-  res.json({ hostToken });
+  const { token, version } = db.claimHost(req.params.sessionId);
+  res.json({ hostToken: token, hostVersion: version });
+  broadcastState(req.params.sessionId);
 });
 
 app.post('/api/sessions/:sessionId/rounds', requireHost, (req, res) => {

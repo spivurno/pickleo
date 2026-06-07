@@ -35,21 +35,52 @@ export default function SessionPage({ sessionId, navigate }) {
   const [hostToken, setHostToken] = useState(() =>
     localStorage.getItem(`host_${sessionId}`) || localStorage.getItem(`mc_${sessionId}`)
   );
+  const [myHostVersion, setMyHostVersion] = useState(() => {
+    const v = localStorage.getItem(`host_version_${sessionId}`);
+    return v !== null ? Number(v) : null;
+  });
+  // Ref so the WebSocket callback always sees the current value (avoids stale closure)
+  const myHostVersionRef = useRef(myHostVersion);
+  myHostVersionRef.current = myHostVersion;
+
   const isHost = Boolean(hostToken);
 
-  // Initial load
+  // Initial load — also seeds myHostVersion for original session creators who never went through handleClaim
   useEffect(() => {
     getSession(sessionId).then(data => {
       if (!data) setError('Board not found or expired.');
-      else setSession(data);
+      else {
+        setSession(data);
+        const hasToken = localStorage.getItem(`host_${sessionId}`) || localStorage.getItem(`mc_${sessionId}`);
+        const storedVersion = localStorage.getItem(`host_version_${sessionId}`);
+        if (hasToken && storedVersion === null) {
+          const v = data.hostVersion ?? 0;
+          localStorage.setItem(`host_version_${sessionId}`, String(v));
+          setMyHostVersion(v);
+          myHostVersionRef.current = v;
+        }
+      }
       setLoading(false);
     });
   }, [sessionId]);
 
   // Real-time updates
   const connected = useSocket(sessionId, useCallback(msg => {
-    if (msg.type === 'state') setSession(msg.data);
-  }, []));
+    if (msg.type === 'state') {
+      setSession(msg.data);
+      const serverVersion = msg.data.hostVersion ?? 0;
+      const myVersion = myHostVersionRef.current ?? 0;
+      const hasToken = localStorage.getItem(`host_${sessionId}`) || localStorage.getItem(`mc_${sessionId}`);
+      if (hasToken && serverVersion !== myVersion) {
+        localStorage.removeItem(`host_${sessionId}`);
+        localStorage.removeItem(`mc_${sessionId}`);
+        localStorage.removeItem(`host_version_${sessionId}`);
+        setHostToken(null);
+        setMyHostVersion(null);
+        myHostVersionRef.current = null;
+      }
+    }
+  }, [sessionId]));
 
   async function handleGenerate() {
     setGenerating(true);
@@ -131,9 +162,12 @@ export default function SessionPage({ sessionId, navigate }) {
 
   async function handleClaim() {
     try {
-      const { hostToken: newToken } = await claimHost(sessionId);
+      const { hostToken: newToken, hostVersion: newVersion } = await claimHost(sessionId);
       localStorage.setItem(`host_${sessionId}`, newToken);
+      localStorage.setItem(`host_version_${sessionId}`, String(newVersion));
+      myHostVersionRef.current = newVersion;
       setHostToken(newToken);
+      setMyHostVersion(newVersion);
     } catch (e) {
       setActionError(e.message);
     }
