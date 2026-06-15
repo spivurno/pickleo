@@ -428,7 +428,7 @@ export default function SessionPage({ sessionId, navigate }) {
                     <button
                       className="btn-ghost btn-sm"
                       onClick={() => handleRestorePlayer(p.id)}
-                    >Rejoin</button>
+                    >Unbench</button>
                     <button
                       className="btn-ghost btn-sm danger"
                       onClick={() => handleDeletePlayer(p)}
