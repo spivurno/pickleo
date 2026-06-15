@@ -225,7 +225,7 @@ export default function SessionPage({ sessionId, navigate }) {
     </div>
   );
 
-  const { players, archivedPlayers = [], currentRound, rounds, courts } = session;
+  const { players, archivedPlayers = [], currentRound, rounds, courts, totalRounds } = session;
   const roundNumber = currentRound?.roundNumber ?? 0;
   const canGenerate = players.length >= 4;
 
@@ -257,7 +257,6 @@ export default function SessionPage({ sessionId, navigate }) {
             ) : (
               <h1 className="header-title">{session.name || <span className="board-name-unnamed">Unnamed Board</span>}</h1>
             )}
-            {roundNumber > 0 && <p className="header-sub">Round {roundNumber}</p>}
           </div>
         </div>
         <div className="header-right">
@@ -304,6 +303,12 @@ export default function SessionPage({ sessionId, navigate }) {
 
       {/* Current round */}
       <div className="section">
+        {currentRound && (
+          <div className="round-header">
+            <span className="round-label">Round {roundNumber}</span>
+            {totalRounds > 0 && <span className="round-alltime">{totalRounds} all-time</span>}
+          </div>
+        )}
         {currentRound ? (
           <>
             <div className="courts-grid">
@@ -349,7 +354,7 @@ export default function SessionPage({ sessionId, navigate }) {
           </button>
           {rounds.length > 0 && (
             <button className="reset-board-btn" onClick={() => setConfirmReset(true)}>
-              Reset Board
+              New Session
             </button>
           )}
         </div>

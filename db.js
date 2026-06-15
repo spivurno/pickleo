@@ -62,6 +62,7 @@ try { db.exec('ALTER TABLE players ADD COLUMN archived INTEGER NOT NULL DEFAULT 
 try { db.exec('ALTER TABLE sessions ADD COLUMN bye_queue TEXT'); } catch {}
 try { db.exec('ALTER TABLE sessions ADD COLUMN host_version INTEGER NOT NULL DEFAULT 0'); } catch {}
 try { db.exec('ALTER TABLE sessions ADD COLUMN name TEXT'); } catch {}
+try { db.exec('ALTER TABLE sessions ADD COLUMN total_rounds INTEGER NOT NULL DEFAULT 0'); } catch {}
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -175,6 +176,7 @@ export function saveRound(sessionId, roundId, { courts, byes }) {
     db.prepare(
       'INSERT INTO rounds (id, session_id, round_number, created_at) VALUES (?, ?, ?, ?)'
     ).run(roundId, sessionId, roundNumber, Date.now());
+    db.prepare('UPDATE sessions SET total_rounds = total_rounds + 1 WHERE id = ?').run(sessionId);
 
     courts.forEach((court, i) => {
       db.prepare(
@@ -300,6 +302,7 @@ export function getSessionState(sessionId) {
     name: session.name || null,
     courts: session.courts,
     hostVersion: session.host_version ?? 0,
+    totalRounds: session.total_rounds ?? 0,
     players,
     archivedPlayers,
     rounds: enrichedRounds,

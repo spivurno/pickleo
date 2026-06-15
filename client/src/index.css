@@ -173,7 +173,6 @@ input { font: inherit; }
 .header-left { display: flex; align-items: center; gap: .6rem; }
 .header-logo { font-size: 1.6rem; line-height: 1; }
 .header-title { font-size: 1.1rem; font-weight: 700; line-height: 1.2; }
-.header-sub { font-size: .8rem; color: var(--muted); }
 .header-right { display: flex; align-items: center; gap: .75rem; }
 
 .conn-dot {
@@ -229,6 +228,22 @@ input { font: inherit; }
 }
 .host-banner .btn-ghost:hover { background: #bbf7d0; color: var(--text); }
 
+
+/* ── Round header ──────────────────────────────────────────────────────── */
+.round-header {
+  display: flex;
+  align-items: baseline;
+  gap: .6rem;
+  margin-bottom: .75rem;
+}
+.round-label {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.round-alltime {
+  font-size: .8rem;
+  color: var(--muted);
+}
 
 /* ── Court cards ───────────────────────────────────────────────────────── */
 .courts-grid {
