@@ -81,6 +81,13 @@ app.get('/api/sessions/:sessionId', (req, res) => {
   res.json(state);
 });
 
+app.patch('/api/sessions/:sessionId/name', requireHost, (req, res) => {
+  const name = (req.body.name || '').trim().slice(0, 60) || null;
+  db.renameBoard(req.params.sessionId, name);
+  broadcastState(req.params.sessionId);
+  res.json({ ok: true });
+});
+
 app.patch('/api/sessions/:sessionId/courts', requireHost, (req, res) => {
   const courts = Math.max(1, parseInt(req.body.courts) || 1);
   db.updateCourts(req.params.sessionId, courts);

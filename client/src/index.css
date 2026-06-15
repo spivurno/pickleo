@@ -79,6 +79,77 @@ input { font: inherit; }
 .home-subtitle { color: var(--muted); margin-bottom: 2rem; }
 .home-hint { font-size: .8rem; color: var(--muted); margin-top: 1rem; }
 
+/* ── Recent boards ─────────────────────────────────────────────────────── */
+.recent-boards {
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1.25rem;
+  text-align: left;
+}
+.recent-boards__label {
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--muted);
+  margin-bottom: .5rem;
+}
+.recent-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+}
+.recent-item {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+  border-radius: var(--radius-sm);
+  transition: background .12s;
+}
+.recent-item:hover { background: var(--bg); }
+.recent-link {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  gap: .5rem;
+  padding: .45rem .5rem;
+  border-radius: var(--radius-sm);
+  text-align: left;
+  font-size: .9rem;
+  overflow: hidden;
+}
+.recent-name {
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.recent-id {
+  font-weight: 500;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.recent-meta {
+  font-size: .78rem;
+  color: var(--muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.recent-remove {
+  flex-shrink: 0;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--muted);
+  padding: .3rem .45rem;
+  border-radius: var(--radius-sm);
+  transition: background .15s, color .15s;
+}
+.recent-remove:hover { background: #fee2e2; color: var(--danger); }
+
 /* ── Header ────────────────────────────────────────────────────────────── */
 .session-header {
   display: flex;
@@ -674,6 +745,89 @@ input { font: inherit; }
   font-weight: 600;
 }
 .display-mode-btn--on:hover { background: #bbf7d0; }
+
+/* ── Hamburger menu ────────────────────────────────────────────────────── */
+.header-menu-wrap {
+  position: relative;
+}
+.hamburger-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  gap: 0;
+}
+.hamburger-icon,
+.hamburger-icon::before,
+.hamburger-icon::after {
+  display: block;
+  width: 1.1rem;
+  height: 2px;
+  background: currentColor;
+  border-radius: 2px;
+}
+.hamburger-icon {
+  position: relative;
+}
+.hamburger-icon::before,
+.hamburger-icon::after {
+  content: '';
+  position: absolute;
+  left: 0;
+}
+.hamburger-icon::before { top: -5px; }
+.hamburger-icon::after  { top:  5px; }
+.header-menu {
+  position: absolute;
+  top: calc(100% + .4rem);
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  min-width: 140px;
+  z-index: 50;
+  overflow: hidden;
+}
+.header-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: .65rem 1rem;
+  font-size: .9rem;
+  color: var(--text);
+  transition: background .12s;
+}
+.header-menu-item:hover { background: var(--bg); }
+
+/* ── Board name ────────────────────────────────────────────────────────── */
+.board-name-btn {
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  padding: .1rem .3rem;
+  margin: -.1rem -.3rem;
+  transition: background .15s;
+  text-align: left;
+}
+.board-name-btn:hover { background: var(--border); }
+.board-name-unnamed { color: var(--muted); font-weight: 400; font-style: italic; }
+.board-name-input {
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.2;
+  border: 1.5px solid var(--green);
+  border-radius: var(--radius-sm);
+  padding: .1rem .3rem;
+  outline: none;
+  width: 14rem;
+  max-width: 50vw;
+}
 
 /* ── Claim host bar ────────────────────────────────────────────────────── */
 .claim-host-bar {

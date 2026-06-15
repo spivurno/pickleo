@@ -61,6 +61,7 @@ db.exec(`
 try { db.exec('ALTER TABLE players ADD COLUMN archived INTEGER NOT NULL DEFAULT 0'); } catch {}
 try { db.exec('ALTER TABLE sessions ADD COLUMN bye_queue TEXT'); } catch {}
 try { db.exec('ALTER TABLE sessions ADD COLUMN host_version INTEGER NOT NULL DEFAULT 0'); } catch {}
+try { db.exec('ALTER TABLE sessions ADD COLUMN name TEXT'); } catch {}
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -156,6 +157,10 @@ export function resetBoard(sessionId) {
     db.prepare('UPDATE players SET archived = 1 WHERE session_id = ?').run(sessionId);
     db.prepare('UPDATE sessions SET bye_queue = NULL WHERE id = ?').run(sessionId);
   })();
+}
+
+export function renameBoard(sessionId, name) {
+  db.prepare('UPDATE sessions SET name = ? WHERE id = ?').run(name || null, sessionId);
 }
 
 export function updateByeQueue(sessionId, queue) {
@@ -292,6 +297,7 @@ export function getSessionState(sessionId) {
 
   return {
     id: session.id,
+    name: session.name || null,
     courts: session.courts,
     hostVersion: session.host_version ?? 0,
     players,

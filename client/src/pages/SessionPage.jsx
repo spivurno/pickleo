@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { getSession, generateRound, addPlayer, removePlayer, renamePlayer, updateCourts, claimHost, resetBoard, restorePlayer, deletePlayerPermanent } from '../api.js';
+import { getSession, generateRound, addPlayer, removePlayer, renamePlayer, updateCourts, claimHost, resetBoard, restorePlayer, deletePlayerPermanent, renameBoard } from '../api.js';
 import { useSocket } from '../useSocket.js';
+import { addRecentBoard, updateRecentBoardName } from '../recentBoards.js';
 import CourtCard from '../components/CourtCard.jsx';
 import SwapModal from '../components/SwapModal.jsx';
 import AddPlayerModal from '../components/AddPlayerModal.jsx';
@@ -20,6 +21,10 @@ export default function SessionPage({ sessionId, navigate }) {
   const [editingName, setEditingName] = useState('');
   const [historyOpen, setHistoryOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [editingBoardName, setEditingBoardName] = useState(false);
+  const [boardNameInput, setBoardNameInput] = useState('');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
   const displayModeKey = `displayMode_${sessionId}`;
   const [displayMode, setDisplayMode] = useState(() => localStorage.getItem(displayModeKey) === 'true');
   const addPlayerBtnRef = useRef(null);
@@ -51,6 +56,7 @@ export default function SessionPage({ sessionId, navigate }) {
       if (!data) setError('Board not found or expired.');
       else {
         setSession(data);
+        addRecentBoard(sessionId, data.courts, data.name);
         const hasToken = localStorage.getItem(`host_${sessionId}`) || localStorage.getItem(`mc_${sessionId}`);
         const storedVersion = localStorage.getItem(`host_version_${sessionId}`);
         if (hasToken && storedVersion === null) {
@@ -173,10 +179,42 @@ export default function SessionPage({ sessionId, navigate }) {
     }
   }
 
+  function startEditBoardName() {
+    setBoardNameInput(session?.name || '');
+    setEditingBoardName(true);
+  }
+
+  function cancelEditBoardName() {
+    setEditingBoardName(false);
+    setBoardNameInput('');
+  }
+
+  async function handleRenameBoardSubmit() {
+    const trimmed = boardNameInput.trim().slice(0, 60);
+    setEditingBoardName(false);
+    setBoardNameInput('');
+    if (trimmed === (session?.name || '')) return;
+    try {
+      await renameBoard(sessionId, hostToken, trimmed);
+      updateRecentBoardName(sessionId, trimmed || null);
+    } catch (e) {
+      setActionError(e.message);
+    }
+  }
+
   // Restore focus to "Add player" button when modal closes
   useEffect(() => {
     if (!showAddPlayer) addPlayerBtnRef.current?.focus();
   }, [showAddPlayer]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    function handleClickOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [menuOpen]);
 
   function copyLink() {
     navigator.clipboard.writeText(window.location.href).then(() => {
@@ -206,18 +244,52 @@ export default function SessionPage({ sessionId, navigate }) {
         <div className="header-left">
           <span className="header-logo">🏓</span>
           <div>
-            <h1 className="header-title">Pickleo</h1>
+            {editingBoardName ? (
+              <input
+                className="board-name-input"
+                value={boardNameInput}
+                maxLength={60}
+                autoFocus
+                placeholder="Board name"
+                onChange={e => setBoardNameInput(e.target.value)}
+                onBlur={handleRenameBoardSubmit}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') e.target.blur();
+                  if (e.key === 'Escape') cancelEditBoardName();
+                }}
+              />
+            ) : isHost ? (
+              <button className="board-name-btn" onClick={startEditBoardName} title="Click to rename">
+                {session.name || <span className="board-name-unnamed">Unnamed Board</span>}
+              </button>
+            ) : (
+              <h1 className="header-title">{session.name || <span className="board-name-unnamed">Unnamed Board</span>}</h1>
+            )}
             {roundNumber > 0 && <p className="header-sub">Round {roundNumber}</p>}
           </div>
         </div>
         <div className="header-right">
           <span className={`conn-dot ${connected ? 'conn-dot--on' : 'conn-dot--off'}`} title={connected ? 'Live' : 'Reconnecting…'} />
-          <button className="btn-ghost btn-sm" onClick={copyLink}>
-            {copied ? '✓ Copied' : 'Share link'}
-          </button>
-          <button className="btn-ghost btn-sm muted" onClick={() => navigate('/')}>
-            New board
-          </button>
+          <div className="header-menu-wrap" ref={menuRef}>
+            <button
+              className="btn-ghost btn-sm hamburger-btn"
+              onClick={() => setMenuOpen(o => !o)}
+              aria-label="Menu"
+              aria-expanded={menuOpen}
+            >
+              <span className="hamburger-icon" />
+            </button>
+            {menuOpen && (
+              <div className="header-menu">
+                <button className="header-menu-item" onClick={() => { copyLink(); setMenuOpen(false); }}>
+                  {copied ? '✓ Copied' : 'Share link'}
+                </button>
+                <button className="header-menu-item" onClick={() => { setMenuOpen(false); navigate('/'); }}>
+                  New board
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 

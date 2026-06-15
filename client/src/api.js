@@ -90,6 +90,14 @@ export async function claimHost(sessionId) {
   }));
 }
 
+export async function renameBoard(sessionId, hostToken, name) {
+  return handle(await fetch(`/api/sessions/${sessionId}/name`, {
+    method: 'PATCH',
+    headers: hostHeaders(hostToken),
+    body: JSON.stringify({ name }),
+  }));
+}
+
 export async function updateCourts(sessionId, hostToken, courts) {
   return handle(await fetch(`/api/sessions/${sessionId}/courts`, {
     method: 'PATCH',
