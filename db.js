@@ -99,6 +99,16 @@ export function addPlayer(sessionId, playerId, name) {
       q.push(playerId);
       db.prepare('UPDATE sessions SET bye_queue = ? WHERE id = ?').run(JSON.stringify(q), sessionId);
     }
+    // If rounds have already been generated, add the new player as a bye for the current round
+    // so they appear as sitting out and are immediately available for swaps
+    const latestRound = db.prepare(
+      'SELECT id FROM rounds WHERE session_id = ? ORDER BY round_number DESC LIMIT 1'
+    ).get(sessionId);
+    if (latestRound) {
+      db.prepare(
+        'INSERT OR IGNORE INTO byes (round_id, session_id, player_id) VALUES (?, ?, ?)'
+      ).run(latestRound.id, sessionId, playerId);
+    }
   })();
 }
 
