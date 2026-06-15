@@ -498,26 +498,10 @@ input { font: inherit; }
 .past-player-name {
   color: var(--muted);
 }
-.delete-undo-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: .95rem;
-  color: var(--muted);
-  padding: .65rem .9rem;
-  margin-bottom: .25rem;
+.player-row--deleting {
   background: #fefce8;
-  border: 1px solid #fde68a;
-  border-radius: var(--radius-sm);
+  color: var(--muted);
 }
-.delete-undo-btn {
-  font-size: .95rem;
-  font-weight: 600;
-  color: var(--green-dark);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-.delete-undo-btn:hover { color: var(--green); }
 .player-row--empty {
   justify-content: center;
   padding: .75rem;

@@ -20,7 +20,8 @@ export default function SessionPage({ sessionId, navigate }) {
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState(null);
-  const [pendingDelete, setPendingDelete] = useState(null);
+  const [pendingDeletes, setPendingDeletes] = useState(new Set());
+  const pendingDeleteTimers = useRef({});
   const [historyOpen, setHistoryOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
   const [editingBoardName, setEditingBoardName] = useState(false);
@@ -110,22 +111,24 @@ export default function SessionPage({ sessionId, navigate }) {
   }
 
   function handleDeletePlayer(player) {
-    if (pendingDelete) clearTimeout(pendingDelete.timeoutId);
     const timeoutId = setTimeout(async () => {
       try {
         await deletePlayerPermanent(sessionId, hostToken, player.id);
       } catch (e) {
         setActionError(e.message);
       } finally {
-        setPendingDelete(null);
+        setPendingDeletes(prev => { const next = new Set(prev); next.delete(player.id); return next; });
+        delete pendingDeleteTimers.current[player.id];
       }
     }, 5000);
-    setPendingDelete({ id: player.id, name: player.name, timeoutId });
+    pendingDeleteTimers.current[player.id] = timeoutId;
+    setPendingDeletes(prev => new Set(prev).add(player.id));
   }
 
-  function handleUndoDelete() {
-    if (pendingDelete) clearTimeout(pendingDelete.timeoutId);
-    setPendingDelete(null);
+  function handleUndoDelete(playerId) {
+    clearTimeout(pendingDeleteTimers.current[playerId]);
+    delete pendingDeleteTimers.current[playerId];
+    setPendingDeletes(prev => { const next = new Set(prev); next.delete(playerId); return next; });
   }
 
   async function handleReset() {
@@ -198,7 +201,7 @@ export default function SessionPage({ sessionId, navigate }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [menuOpen]);
 
-  useEffect(() => () => { if (pendingDelete) clearTimeout(pendingDelete.timeoutId); }, [pendingDelete]);
+  useEffect(() => () => { Object.values(pendingDeleteTimers.current).forEach(clearTimeout); }, []);
 
   function copyLink() {
     navigator.clipboard.writeText(window.location.href).then(() => {
@@ -411,33 +414,34 @@ export default function SessionPage({ sessionId, navigate }) {
           ))}
         </div>
 
-        {isHost && (archivedPlayers.length > 0 || pendingDelete) && (
+        {isHost && archivedPlayers.length > 0 && (
           <div className="past-players">
             <div className="section-header">
-              <h2 className="section-title">Benched players ({archivedPlayers.filter(p => p.id !== pendingDelete?.id).length})</h2>
+              <h2 className="section-title">Benched players ({archivedPlayers.length})</h2>
             </div>
-            {pendingDelete && (
-              <div className="delete-undo-bar">
-                <span>{pendingDelete.name} deleted.</span>
-                <button className="delete-undo-btn" onClick={handleUndoDelete}>Undo</button>
-              </div>
-            )}
             <div className="player-list">
-              {archivedPlayers.filter(p => p.id !== pendingDelete?.id).map(p => (
-                <div key={p.id} className="player-row">
-                  <span className="past-player-name">{p.name}</span>
-                  <div className="player-actions">
-                    <button
-                      className="btn-ghost btn-sm"
-                      onClick={() => handleRestorePlayer(p.id)}
-                    >Unbench</button>
-                    <button
-                      className="btn-ghost btn-sm danger"
-                      onClick={() => handleDeletePlayer(p)}
-                    >Delete</button>
+              {archivedPlayers.map(p =>
+                pendingDeletes.has(p.id) ? (
+                  <div key={p.id} className="player-row player-row--deleting">
+                    <span style={{fontWeight: 600}}>{p.name} deleted.</span>
+                    <button className="btn-ghost btn-sm" style={{fontWeight: 600}} onClick={() => handleUndoDelete(p.id)}>Undo</button>
                   </div>
-                </div>
-              ))}
+                ) : (
+                  <div key={p.id} className="player-row">
+                    <span className="past-player-name">{p.name}</span>
+                    <div className="player-actions">
+                      <button
+                        className="btn-ghost btn-sm"
+                        onClick={() => handleRestorePlayer(p.id)}
+                      >Unbench</button>
+                      <button
+                        className="btn-ghost btn-sm danger"
+                        onClick={() => handleDeletePlayer(p)}
+                      >Delete</button>
+                    </div>
+                  </div>
+                )
+              )}
             </div>
           </div>
         )}
