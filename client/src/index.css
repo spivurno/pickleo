@@ -203,11 +203,6 @@ input { font: inherit; }
   gap: .75rem;
   flex-wrap: wrap;
 }
-.court-control {
-  display: flex;
-  align-items: center;
-  gap: .4rem;
-}
 .btn-danger {
   background: var(--danger);
   color: white;
@@ -226,10 +221,6 @@ input { font: inherit; }
 }
 .host-banner .btn-ghost:hover { background: #bbf7d0; color: var(--text); }
 
-@media (max-width: 480px) {
-  .host-banner { justify-content: center; text-align: center; }
-  .host-banner-right { justify-content: center; }
-}
 
 /* ── Court cards ───────────────────────────────────────────────────────── */
 .courts-grid {
@@ -647,6 +638,7 @@ input { font: inherit; }
   gap: .75rem;
   justify-content: center;
   margin-top: .25rem;
+  margin-bottom: .75rem;
 }
 .stepper-btn {
   width: 44px;
@@ -662,17 +654,7 @@ input { font: inherit; }
   transition: background .15s;
 }
 .stepper-btn:hover { background: #bbf7d0; }
-.stepper-btn--sm {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: white;
-  color: var(--green-dark);
-  font-size: 1rem;
-  border: 1px solid #86efac;
-}
 .stepper-value { font-size: 1.5rem; font-weight: 700; min-width: 2rem; text-align: center; }
-.stepper-value--sm { font-size: 1rem; font-weight: 700; min-width: 1.5rem; text-align: center; }
 
 /* ── Player inline edit ────────────────────────────────────────────────── */
 .player-actions {

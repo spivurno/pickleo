@@ -6,6 +6,7 @@ import CourtCard from '../components/CourtCard.jsx';
 import SwapModal from '../components/SwapModal.jsx';
 import AddPlayerModal from '../components/AddPlayerModal.jsx';
 import ResetConfirmModal from '../components/ResetConfirmModal.jsx';
+import AdjustCourtsModal from '../components/AdjustCourtsModal.jsx';
 import RoundHistoryTable from '../components/RoundHistoryTable.jsx';
 
 export default function SessionPage({ sessionId, navigate }) {
@@ -24,6 +25,7 @@ export default function SessionPage({ sessionId, navigate }) {
   const [editingBoardName, setEditingBoardName] = useState(false);
   const [boardNameInput, setBoardNameInput] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showAdjustCourts, setShowAdjustCourts] = useState(false);
   const menuRef = useRef(null);
   const displayModeKey = `displayMode_${sessionId}`;
   const [displayMode, setDisplayMode] = useState(() => localStorage.getItem(displayModeKey) === 'true');
@@ -297,12 +299,9 @@ export default function SessionPage({ sessionId, navigate }) {
         <div className="host-banner">
           <span className="host-badge">You are the host</span>
           <div className="host-banner-right">
-            <div className="court-control">
-              <span className="label">Courts</span>
-              <button className="stepper-btn stepper-btn--sm" onClick={() => handleCourtsChange(-1)}>−</button>
-              <span className="stepper-value stepper-value--sm">{courts}</span>
-              <button className="stepper-btn stepper-btn--sm" onClick={() => handleCourtsChange(1)}>+</button>
-            </div>
+            <button className="btn-ghost btn-sm" onClick={() => setShowAdjustCourts(true)}>
+              Adjust Courts
+            </button>
             {rounds.length > 0 && (
               <button className="btn-ghost btn-sm" onClick={() => setConfirmReset(true)}>
                 Reset Board
@@ -502,6 +501,14 @@ export default function SessionPage({ sessionId, navigate }) {
         <ResetConfirmModal
           onConfirm={handleReset}
           onClose={() => setConfirmReset(false)}
+        />
+      )}
+
+      {showAdjustCourts && (
+        <AdjustCourtsModal
+          courts={courts}
+          onAdjust={handleCourtsChange}
+          onClose={() => setShowAdjustCourts(false)}
         />
       )}
 
