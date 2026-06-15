@@ -27,17 +27,7 @@ export default function SessionPage({ sessionId, navigate }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showAdjustCourts, setShowAdjustCourts] = useState(false);
   const menuRef = useRef(null);
-  const displayModeKey = `displayMode_${sessionId}`;
-  const [displayMode, setDisplayMode] = useState(() => localStorage.getItem(displayModeKey) === 'true');
   const addPlayerBtnRef = useRef(null);
-
-  function toggleDisplayMode() {
-    setDisplayMode(prev => {
-      const next = !prev;
-      localStorage.setItem(displayModeKey, String(next));
-      return next;
-    });
-  }
 
   const [hostToken, setHostToken] = useState(() =>
     localStorage.getItem(`host_${sessionId}`) || localStorage.getItem(`mc_${sessionId}`)
@@ -240,7 +230,7 @@ export default function SessionPage({ sessionId, navigate }) {
   const canGenerate = players.length >= 4;
 
   return (
-    <div className={`session-page${displayMode ? ' display-mode' : ''}`}>
+    <div className="session-page">
       {/* Header */}
       <header className="session-header">
         <div className="header-left">
@@ -511,15 +501,6 @@ export default function SessionPage({ sessionId, navigate }) {
           onClose={() => setShowAdjustCourts(false)}
         />
       )}
-
-      <div className="display-mode-bar">
-        <button
-          className={`display-mode-btn${displayMode ? ' display-mode-btn--on' : ''}`}
-          onClick={toggleDisplayMode}
-        >
-          {displayMode ? 'Exit Display Mode' : 'Display Mode'}
-        </button>
-      </div>
 
       <div className="claim-host-bar">
         {isHost ? (
