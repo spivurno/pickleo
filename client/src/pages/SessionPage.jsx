@@ -413,7 +413,9 @@ export default function SessionPage({ sessionId, navigate }) {
 
         {isHost && (archivedPlayers.length > 0 || pendingDelete) && (
           <div className="past-players">
-            <p className="past-players__label">Benched players</p>
+            <div className="section-header">
+              <h2 className="section-title">Benched players ({archivedPlayers.filter(p => p.id !== pendingDelete?.id).length})</h2>
+            </div>
             {pendingDelete && (
               <div className="delete-undo-bar">
                 <span>{pendingDelete.name} deleted.</span>

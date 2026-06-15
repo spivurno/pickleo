@@ -239,11 +239,11 @@ export function getSessionState(sessionId) {
   db.prepare('UPDATE sessions SET expires_at = ? WHERE id = ?').run(Date.now() + THIRTY_DAYS_MS, sessionId);
 
   const players = db.prepare(
-    'SELECT id, name FROM players WHERE session_id = ? AND archived = 0 ORDER BY added_at'
+    'SELECT id, name FROM players WHERE session_id = ? AND archived = 0 ORDER BY name COLLATE NOCASE'
   ).all(sessionId);
 
   const archivedPlayers = db.prepare(
-    'SELECT id, name FROM players WHERE session_id = ? AND archived = 1 ORDER BY added_at'
+    'SELECT id, name FROM players WHERE session_id = ? AND archived = 1 ORDER BY name COLLATE NOCASE'
   ).all(sessionId);
 
   const allPlayers = db.prepare(
