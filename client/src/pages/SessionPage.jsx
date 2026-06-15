@@ -20,6 +20,7 @@ export default function SessionPage({ sessionId, navigate }) {
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState(null);
+  const [pendingDelete, setPendingDelete] = useState(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
   const [editingBoardName, setEditingBoardName] = useState(false);
@@ -108,12 +109,23 @@ export default function SessionPage({ sessionId, navigate }) {
     }
   }
 
-  async function handleDeletePlayer(playerId) {
-    try {
-      await deletePlayerPermanent(sessionId, hostToken, playerId);
-    } catch (e) {
-      setActionError(e.message);
-    }
+  function handleDeletePlayer(player) {
+    if (pendingDelete) clearTimeout(pendingDelete.timeoutId);
+    const timeoutId = setTimeout(async () => {
+      try {
+        await deletePlayerPermanent(sessionId, hostToken, player.id);
+      } catch (e) {
+        setActionError(e.message);
+      } finally {
+        setPendingDelete(null);
+      }
+    }, 5000);
+    setPendingDelete({ id: player.id, name: player.name, timeoutId });
+  }
+
+  function handleUndoDelete() {
+    if (pendingDelete) clearTimeout(pendingDelete.timeoutId);
+    setPendingDelete(null);
   }
 
   async function handleReset() {
@@ -185,6 +197,8 @@ export default function SessionPage({ sessionId, navigate }) {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [menuOpen]);
+
+  useEffect(() => () => { if (pendingDelete) clearTimeout(pendingDelete.timeoutId); }, [pendingDelete]);
 
   function copyLink() {
     navigator.clipboard.writeText(window.location.href).then(() => {
@@ -397,11 +411,17 @@ export default function SessionPage({ sessionId, navigate }) {
           ))}
         </div>
 
-        {isHost && archivedPlayers.length > 0 && (
+        {isHost && (archivedPlayers.length > 0 || pendingDelete) && (
           <div className="past-players">
             <p className="past-players__label">Past players</p>
+            {pendingDelete && (
+              <div className="delete-undo-bar">
+                <span>{pendingDelete.name} deleted.</span>
+                <button className="delete-undo-btn" onClick={handleUndoDelete}>Undo</button>
+              </div>
+            )}
             <div className="player-list">
-              {archivedPlayers.map(p => (
+              {archivedPlayers.filter(p => p.id !== pendingDelete?.id).map(p => (
                 <div key={p.id} className="player-row">
                   <span className="past-player-name">{p.name}</span>
                   <div className="player-actions">
@@ -411,7 +431,7 @@ export default function SessionPage({ sessionId, navigate }) {
                     >Add Back</button>
                     <button
                       className="btn-ghost btn-sm danger"
-                      onClick={() => handleDeletePlayer(p.id)}
+                      onClick={() => handleDeletePlayer(p)}
                     >Delete</button>
                   </div>
                 </div>

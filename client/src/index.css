@@ -498,6 +498,23 @@ input { font: inherit; }
 .past-player-name {
   color: var(--muted);
 }
+.delete-undo-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: .85rem;
+  color: var(--muted);
+  padding: .4rem .9rem;
+  margin-bottom: .25rem;
+}
+.delete-undo-btn {
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--green-dark);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.delete-undo-btn:hover { color: var(--green); }
 .player-row--empty {
   justify-content: center;
   padding: .75rem;
