@@ -412,7 +412,7 @@ export default function SessionPage({ sessionId, navigate }) {
                     <button
                       className="btn-ghost btn-sm danger"
                       onClick={() => handleDeletePlayer(p.id)}
-                    >Delete Player</button>
+                    >Delete</button>
                   </div>
                 </div>
               ))}
