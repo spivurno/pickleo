@@ -235,7 +235,7 @@ export default function SessionPage({ sessionId, navigate }) {
             ) : (
               <h1 className="header-title">{session.name || <span className="board-name-unnamed">Unnamed Board</span>}</h1>
             )}
-            {totalRounds > 0 && <p className="rounds-played">{totalRounds} rounds all-time</p>}
+            {totalRounds > 0 && <p className="rounds-played">{totalRounds} total rounds</p>}
           </div>
         </div>
         <div className="header-right">
