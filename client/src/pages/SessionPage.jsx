@@ -292,11 +292,6 @@ export default function SessionPage({ sessionId, navigate }) {
             <button className="btn-ghost btn-sm" onClick={() => setShowAdjustCourts(true)}>
               Adjust Courts
             </button>
-            {rounds.length > 0 && (
-              <button className="btn-ghost btn-sm" onClick={() => setConfirmReset(true)}>
-                Reset Board
-              </button>
-            )}
           </div>
         </div>
       )}
@@ -352,6 +347,11 @@ export default function SessionPage({ sessionId, navigate }) {
           >
             {generating ? 'Generating…' : currentRound ? 'Generate Next Round' : 'Generate Round 1'}
           </button>
+          {rounds.length > 0 && (
+            <button className="reset-board-btn" onClick={() => setConfirmReset(true)}>
+              Reset Board
+            </button>
+          )}
         </div>
       )}
 
