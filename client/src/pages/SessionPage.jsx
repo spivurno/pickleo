@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { getSession, generateRound, addPlayer, removePlayer, renamePlayer, updateCourts, claimHost, resetBoard, restorePlayer, deletePlayerPermanent, renameBoard } from '../api.js';
+import { getSession, generateRound, addPlayer, removePlayer, updateCourts, claimHost, resetBoard, restorePlayer, deletePlayerPermanent, renameBoard } from '../api.js';
 import { useSocket } from '../useSocket.js';
 import { addRecentBoard, updateRecentBoardName } from '../recentBoards.js';
 import CourtCard from '../components/CourtCard.jsx';
 import SwapModal from '../components/SwapModal.jsx';
 import AddPlayerModal from '../components/AddPlayerModal.jsx';
+import EditPlayerModal from '../components/EditPlayerModal.jsx';
 import ResetConfirmModal from '../components/ResetConfirmModal.jsx';
 import AdjustCourtsModal from '../components/AdjustCourtsModal.jsx';
 import RoundHistoryTable from '../components/RoundHistoryTable.jsx';
@@ -18,8 +19,7 @@ export default function SessionPage({ sessionId, navigate }) {
   const [showAddPlayer, setShowAddPlayer] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [editingPlayerId, setEditingPlayerId] = useState(null);
-  const [editingName, setEditingName] = useState('');
+  const [editingPlayer, setEditingPlayer] = useState(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
   const [editingBoardName, setEditingBoardName] = useState(false);
@@ -123,28 +123,6 @@ export default function SessionPage({ sessionId, navigate }) {
     } catch (e) {
       setActionError(e.message);
       setConfirmReset(false);
-    }
-  }
-
-  function startEdit(player) {
-    setEditingPlayerId(player.id);
-    setEditingName(player.name);
-  }
-
-  function cancelEdit() {
-    setEditingPlayerId(null);
-    setEditingName('');
-  }
-
-  async function handleRename(playerId) {
-    const trimmed = editingName.trim();
-    if (!trimmed) return cancelEdit();
-    try {
-      await renamePlayer(sessionId, hostToken, playerId, trimmed);
-    } catch (e) {
-      setActionError(e.message);
-    } finally {
-      cancelEdit();
     }
   }
 
@@ -402,40 +380,18 @@ export default function SessionPage({ sessionId, navigate }) {
           )}
           {players.map(p => (
             <div key={p.id} className="player-row">
-              {editingPlayerId === p.id ? (
-                <form
-                  className="player-edit-form"
-                  onSubmit={e => { e.preventDefault(); handleRename(p.id); }}
-                >
-                  <input
-                    className="input player-edit-input"
-                    value={editingName}
-                    onChange={e => setEditingName(e.target.value)}
-                    onKeyDown={e => e.key === 'Escape' && cancelEdit()}
-                    maxLength={40}
-                    autoFocus
-                  />
-                  <button className="btn-ghost btn-sm" type="submit" aria-label="Save">✓</button>
-                  <button className="btn-ghost btn-sm" type="button" onClick={cancelEdit} aria-label="Cancel">✕</button>
-                </form>
-              ) : (
-                <>
-                  <span>{p.name}</span>
-                  {isHost && (
-                    <div className="player-actions">
-                      <button
-                        className="btn-ghost btn-sm"
-                        onClick={() => startEdit(p)}
-                        aria-label={`Rename ${p.name}`}
-                      >✎</button>
-                      <button
-                        className="btn-ghost btn-sm danger"
-                        onClick={() => handleRemovePlayer(p.id)}
-                        aria-label={`Remove ${p.name}`}
-                      >✕</button>
-                    </div>
-                  )}
-                </>
+              <span>{p.name}</span>
+              {isHost && (
+                <div className="player-actions">
+                  <button
+                    className="btn-ghost btn-sm"
+                    onClick={() => setEditingPlayer(p)}
+                  >Edit</button>
+                  <button
+                    className="btn-ghost btn-sm danger"
+                    onClick={() => handleRemovePlayer(p.id)}
+                  >Remove</button>
+                </div>
               )}
             </div>
           ))}
@@ -452,15 +408,11 @@ export default function SessionPage({ sessionId, navigate }) {
                     <button
                       className="btn-ghost btn-sm"
                       onClick={() => handleRestorePlayer(p.id)}
-                      aria-label={`Restore ${p.name}`}
-                    >
-                      Restore
-                    </button>
+                    >Add Back</button>
                     <button
                       className="btn-ghost btn-sm danger"
                       onClick={() => handleDeletePlayer(p.id)}
-                      aria-label={`Delete ${p.name}`}
-                    >🗑</button>
+                    >Delete Player</button>
                   </div>
                 </div>
               ))}
@@ -504,6 +456,16 @@ export default function SessionPage({ sessionId, navigate }) {
           courts={courts}
           onAdjust={handleCourtsChange}
           onClose={() => setShowAdjustCourts(false)}
+        />
+      )}
+
+      {editingPlayer && (
+        <EditPlayerModal
+          sessionId={sessionId}
+          hostToken={hostToken}
+          player={editingPlayer}
+          onClose={() => setEditingPlayer(null)}
+          onError={setActionError}
         />
       )}
 

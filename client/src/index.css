@@ -668,18 +668,7 @@ input { font: inherit; }
 /* ── Player inline edit ────────────────────────────────────────────────── */
 .player-actions {
   display: flex;
-  gap: .15rem;
-}
-.player-edit-form {
-  display: flex;
-  align-items: center;
   gap: .35rem;
-  width: 100%;
-}
-.player-edit-input {
-  flex: 1;
-  padding: .3rem .5rem;
-  font-size: .95rem;
 }
 
 /* ── Add player modal extras ───────────────────────────────────────────── */
