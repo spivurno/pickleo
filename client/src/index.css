@@ -240,8 +240,8 @@ input { font: inherit; }
   font-size: 1.1rem;
   font-weight: 700;
 }
-.round-alltime {
-  font-size: .8rem;
+.rounds-played {
+  font-size: .75rem;
   color: var(--muted);
 }
 
