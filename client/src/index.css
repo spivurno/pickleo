@@ -5,6 +5,7 @@
   --green-light: #dcfce7;
   --green-xlight: #f0fdf4;
   --blue-light: #dbeafe;
+  --blue-dark: #1d4ed8;
   --surface: #ffffff;
   --bg: #f8fafc;
   --border: #e2e8f0;
@@ -210,8 +211,8 @@ input { font: inherit; }
   gap: .75rem;
   flex-wrap: wrap;
 }
-.btn-danger {
-  background: var(--danger);
+.btn-session-start {
+  background: var(--blue-dark);
   color: white;
   font-weight: 600;
   border-radius: var(--radius-sm);
@@ -219,7 +220,7 @@ input { font: inherit; }
   transition: background .15s;
   flex: 1;
 }
-.btn-danger:hover { background: #b91c1c; }
+.btn-session-start:hover { background: #1e40af; }
 .reset-modal-body {
   font-size: .9rem;
   color: var(--muted);

@@ -9,10 +9,10 @@ export default function ResetConfirmModal({ onConfirm, onClose }) {
           <button className="btn-ghost" onClick={onClose} aria-label="Close">✕</button>
         </div>
         <p className="reset-modal-body">
-          This will clear all rounds and match history. Players will be kept. This cannot be undone.
+          This will clear all round history. All players will be benched.
         </p>
         <div className="add-player-actions">
-          <button className="btn-danger" onClick={onConfirm}>New Session</button>
+          <button className="btn-session-start" onClick={onConfirm}>New Session</button>
           <button className="btn-secondary" onClick={onClose}>Cancel</button>
         </div>
       </div>
