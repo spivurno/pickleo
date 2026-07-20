@@ -1,7 +1,7 @@
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **pickleball** (364 symbols, 618 relationships, 30 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **pickleo** (364 symbols, 618 relationships, 30 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
@@ -24,10 +24,10 @@ This project is indexed by GitNexus as **pickleball** (364 symbols, 618 relation
 
 | Resource | Use for |
 |----------|---------|
-| `gitnexus://repo/pickleball/context` | Codebase overview, check index freshness |
-| `gitnexus://repo/pickleball/clusters` | All functional areas |
-| `gitnexus://repo/pickleball/processes` | All execution flows |
-| `gitnexus://repo/pickleball/process/{name}` | Step-by-step execution trace |
+| `gitnexus://repo/pickleo/context` | Codebase overview, check index freshness |
+| `gitnexus://repo/pickleo/clusters` | All functional areas |
+| `gitnexus://repo/pickleo/processes` | All execution flows |
+| `gitnexus://repo/pickleo/process/{name}` | Step-by-step execution trace |
 
 ## CLI
 
